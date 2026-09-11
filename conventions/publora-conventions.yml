@@ -1,0 +1,82 @@
+generated: '2026-09-11'
+method: searched
+source: >-
+  https://docs.publora.com/authentication +
+  https://docs.publora.com/guides/error-handling +
+  https://docs.publora.com/guides/error-codes +
+  https://docs.publora.com/endpoints/list-posts +
+  openapi/publora-openapi-original.json
+authentication:
+  style: api-key
+  rest_header: "x-publora-key: sk_YOUR_API_KEY"
+  mcp_header: "Authorization: Bearer sk_YOUR_API_KEY"
+  managed_user_header: "x-publora-user-id (workspace/B2B only)"
+  note: Long-lived API keys, no expiry/refresh. MCP remote endpoint also supports OAuth (PKCE, dynamic registration).
+idempotency:
+  supported: true
+  mechanism: Idempotency-Key request header (REST); idempotencyKey field (MCP create_post/update_post)
+  coverage: partial
+  scope:
+    - createPost
+    - updatePost
+  scope_note: >-
+    The Idempotency-Key header is documented on create-post and update-post
+    only (2 of ~24 mutating operations). Delete, media, webhook, workspace and
+    LinkedIn interaction writes carry no idempotency contract.
+  conflict_codes: [IDEMPOTENCY_IN_FLIGHT, IDEMPOTENCY_KEY_CONFLICT, IDEMPOTENCY_BODY_TOO_COMPLEX]
+  concurrency: Optimistic — POST_GROUP_VERSION_CONFLICT (409) on a stale write; re-read via get-post and rebase.
+pagination:
+  style: page-number
+  params: [page, limit, sortBy, sortOrder, status, platform, fromDate, toDate]
+  applies_to: [listPosts]
+  note: list-posts is paginated; most other reads are single-resource.
+versioning:
+  scheme: uri-path
+  current: v1
+  base_path: /api/v1
+error_envelope:
+  content_type: application/json
+  shape: "{ error, code, field }"
+  rule: Match on `code`, not the human-readable `error` string.
+  catalog: errors/publora-error-codes.yml
+rate_limit_signal:
+  per_request: not currently enforced (planned)
+  media_url_ingestion: 60 URLs / fixed 1h window -> 429 MEDIA_URL_RATE_LIMITED + Retry-After
+  details: rate-limits/publora-rate-limits.yml
+request_tracing:
+  note: No documented request-id/correlation header in the published contract.
+reversibility:
+  applies: true
+  surfaces:
+    - operation: createPost
+      reversal: deletePost
+      reversal_operation_id: deletePost
+      window: "While the post group is still draft or scheduled; once publishing starts (POST_PUBLISH_IN_PROGRESS) or the post is published/failed it cannot be deleted or edited (POST_NOT_EDITABLE)."
+      window_source: https://docs.publora.com/guides/error-codes
+      grade: verified
+    - operation: updatePost
+      reversal: updatePost
+      reversal_operation_id: updatePost
+      window: "Edits are reversible only within the same draft/scheduled editable window; edit again to restore prior state (no snapshot/undo)."
+      window_source: https://docs.publora.com/endpoints/update-post
+      grade: documented
+    - operation: addLinkedInReaction
+      reversal: removeLinkedInReaction
+      reversal_operation_id: removeLinkedInReaction
+      window: No stated time window; a reaction can be removed at any time.
+      grade: documented
+    - operation: createLinkedInComment
+      reversal: deleteLinkedInComment
+      reversal_operation_id: deleteLinkedInComment
+      window: No stated time window; a comment can be deleted at any time.
+      grade: documented
+  irreversible:
+    - {operation: deleteMedia, note: Permanent; re-upload required.}
+    - {operation: deletePost, note: Permanent removal of the post group across platforms.}
+  grade: verified
+dry_run_mode:
+  supported: true
+  mechanism: >-
+    The 'publora-playground' pseudo-connection accepts a create_post/create-post
+    call and acknowledges it without publishing (post discarded). See
+    sandbox/publora-sandbox.yml.

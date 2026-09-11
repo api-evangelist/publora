@@ -1,0 +1,29 @@
+generated: '2026-09-11'
+method: searched
+source: https://docs.publora.com/changelog
+scheme: date-based
+note: >-
+  "API Changelog and Deprecation Ledger" — records externally relevant REST
+  and MCP contract changes; dates are deployment/publication dates. Entries
+  are tagged Additive or Potentially breaking with explicit migration actions.
+upcoming:
+  - date: '2026-08-25'
+    tag: potentially-breaking
+    surface: REST create-post/update-post + scheduling MCP tools
+    summary: >-
+      scheduledTime strict-mode ramp — a time >=5 min in the past will return
+      400 SCHEDULED_TIME_IN_PAST unless SCHEDULED_TIME_STRICT overrides.
+entries:
+  - date: '2026-09-08'
+    tag: additive
+    summary: >-
+      Mastodon and Bluesky statistics — new REST POST /post-statistics and
+      POST /profile-statistics, and MCP tools post_stats and profile_stats.
+      Gated by the analytics plan feature (403 ANALYTICS_PLAN_REQUIRED);
+      90s budget (504 ANALYTICS_REQUEST_TIMEOUT); values cached ~2h.
+  - date: '2026-08-27'
+    tag: additive
+    breaking: false
+    summary: >-
+      Native Zapier app (beta, v1.2.0) built on the public API and webhooks —
+      instant trigger "New Published Post". No REST/MCP contract change.

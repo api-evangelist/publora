@@ -1,0 +1,24 @@
+generated: '2026-09-11'
+method: searched
+source: https://docs.publora.com/changelog
+versioning:
+  scheme: uri-path
+  current: v1
+  docs: https://docs.publora.com/getting-started
+deprecation:
+  policy: >-
+    Publora maintains a dated changelog and deprecation ledger recording
+    externally relevant REST and MCP contract changes, tagged Additive /
+    Potentially breaking, with explicit migration actions and warn-first ramps
+    (e.g. SCHEDULED_TIME_COERCED warnings before SCHEDULED_TIME_IN_PAST becomes
+    a hard 400 on 2026-08-25).
+  policy_url: https://docs.publora.com/changelog
+  sunset_header: false
+  warn_first: true
+sla:
+  url: null
+  note: No published SLA/uptime target found.
+status_page:
+  url: null
+  note: No dedicated status page found (searched publora.com and docs).
+deprecated_operations: []

@@ -1,0 +1,39 @@
+generated: '2026-09-11'
+method: derived
+source: openapi/publora-openapi-original.json
+note: >-
+  Entity graph derived from OpenAPI component schemas and id-reference fields.
+  A "post group" (postGroupId) is the aggregate created by create-post; it fans
+  out to one platform post per targeted connection.
+entities:
+  - name: PostGroup
+    id: postGroupId
+    description: The logical post created by create-post; spans all targeted platforms.
+  - name: Post
+    id: postedId
+    key_fields: [platformId, postedId]
+    description: A single per-platform published post within a group.
+  - name: PlatformConnection
+    id: platformId
+    description: A connected social account (form <platform>-<platformId>).
+  - name: PostLog
+    id: _id
+    key_fields: [postGroupId, postId]
+    description: Publish-attempt history entry for a post group.
+  - name: Media
+    id: mediaId
+    description: An uploaded media file (image/video/PDF) attached to posts.
+  - name: Webhook
+    id: _id
+    description: A subscription delivering post-lifecycle events.
+  - name: ManagedUser
+    id: _id
+    description: A workspace/B2B sub-user managed under the account.
+relationships:
+  - {from: PostGroup, to: Post, type: has_many, via: platform fan-out}
+  - {from: Post, to: PlatformConnection, type: belongs_to, via: platformId}
+  - {from: PostLog, to: PostGroup, type: belongs_to, via: postGroupId}
+  - {from: PostLog, to: Post, type: belongs_to, via: postId}
+  - {from: PostGroup, to: Media, type: has_many, via: mediaUrls / mediaId}
+  - {from: ManagedUser, to: PlatformConnection, type: has_many, via: workspace connection}
+  - {from: Webhook, to: PostGroup, type: observes, via: post.* events}

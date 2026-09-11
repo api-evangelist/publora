@@ -1,0 +1,55 @@
+generated: '2026-09-11'
+method: searched
+source: https://publora.com/pricing
+machine_readable_source: https://publora.com/pricing.md
+currency: USD
+pricing_model: per-connected-account (graduated) for Pro; free Starter; custom Agency
+plan_count: 3
+plans:
+  - name: Starter
+    price: 0
+    billing_period: month
+    quota:
+      social_accounts: 3
+      posts_per_month: 15
+      post_scope: account-wide
+      scheduled_posts: 3
+      schedule_horizon_days: 7
+      video_upload_mb: 50
+    platforms: All except X
+    api_access: true
+    mcp_access: true
+  - name: Pro
+    billing_period: month
+    pricing: graduated-per-account
+    tiers:
+      - {accounts: "1-5", monthly_per_account: 5.99, yearly_per_account: 3.99}
+      - {accounts: "6-20", monthly_per_account: 2.99, yearly_per_account: 1.99}
+      - {accounts: "21+", monthly_per_account: 0.99, yearly_per_account: 0.66}
+    yearly_discount: "33%"
+    quota:
+      posts_per_month: unlimited (fair use, ~5000)
+      scheduled_posts: unlimited
+      schedule_horizon: unlimited
+      video_upload_mb: 250
+    platforms: All including X
+    api_access: true
+    mcp_access: true
+    includes: [AI Editor, Webhooks, Priority support]
+    example: "10 accounts = 5x$5.99 + 5x$2.99 = $44.90/mo ($29.90/mo billed yearly)"
+  - name: Agency
+    price: custom
+    billing_period: custom
+    quota:
+      social_accounts: custom
+      posts_per_month: unlimited
+    features: [Isolated client workspaces, Unlimited team members, Role-based access, One-link client approvals, API/MCP automations, Custom feature requests]
+    contact: https://publora.com/pricing
+legacy_plans:
+  note: Legacy fixed-price tiers still enforced for existing subscribers.
+  entries:
+    - {name: "Pro Monthly (legacy)", price: 5.99, posts_per_month: 100, scheduled_posts: 100}
+    - {name: "Pro Yearly (legacy)", price: 2.99, posts_per_month: 100, scheduled_posts: 100}
+    - {name: "Premium Monthly (legacy)", price: 9.99, posts_per_month: 500, scheduled_posts: 500}
+    - {name: "Premium Yearly (legacy)", price: 5.99, posts_per_month: 500, scheduled_posts: 500}
+free_trial: 14-day free trial, no credit card required (Starter is free forever)

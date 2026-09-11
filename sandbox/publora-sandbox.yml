@@ -1,0 +1,20 @@
+generated: '2026-09-11'
+method: searched
+source: >-
+  https://mcp.publora.com/mcp (create_post tool schema) +
+  https://docs.publora.com/endpoints/create-post
+note: >-
+  Publora has no separate test/live key modes. It exposes one built-in
+  connection-test target that lets an integration exercise create-post without
+  publishing anything. Never invent other test values.
+test_targets:
+  - id: publora-playground
+    kind: connection-test pseudo-connection
+    behavior: >-
+      A create-post / create_post call whose platforms is exactly
+      ['publora-playground'] is acknowledged and discarded — nothing is
+      published. Must be the ONLY entry in platforms when used.
+    requires_real_connection: false
+key_modes:
+  test_live_separation: false
+  note: API keys are long-lived and single-mode; there is no sk_test_ vs sk_live_ split.

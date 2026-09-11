@@ -1,0 +1,69 @@
+generated: '2026-09-11'
+method: searched
+source: https://docs.publora.com/guides/error-codes
+format: code-envelope
+note: >-
+  Publora returns a JSON envelope { error, code, field, ... } — NOT RFC 9457
+  problem+json. Match on `code`, never the human message. Codes appear at the
+  top level, inside warnings[], validation.errors[], per-URL in mediaResults[],
+  or per-connection in the analytics issues object.
+envelope:
+  fields: [error, code, field]
+  guidance: "Prefer `code` over `error`; older paths return `error` only."
+categories:
+  request_and_scheduling:
+    - {code: IDEMPOTENCY_IN_FLIGHT, http: 409, location: top-level, retryable: true, meaning: Another request with this idempotency key is still running or its claim was superseded}
+    - {code: IDEMPOTENCY_KEY_CONFLICT, http: 422, location: top-level, retryable: false, meaning: Key already used with a different body or resource}
+    - {code: IDEMPOTENCY_BODY_TOO_COMPLEX, http: 400, location: top-level, retryable: false, meaning: Body too deeply nested to hash safely for idempotency}
+    - {code: PLATFORM_SETTING_UNKNOWN, http: 400, location: top-level, retryable: false, meaning: A platformSettings path is outside the strict allowlist}
+    - {code: PLATFORMS_REQUIRED, http: 400, location: top-level, retryable: false, meaning: Scheduling would leave the post with no target platforms}
+    - {code: INVALID_CONTENT, http: 400, location: top-level, retryable: false, meaning: update-post received a non-string content}
+    - {code: INVALID_PLATFORMS, http: 400, location: top-level, retryable: false, meaning: platforms is not a valid duplicate-free array of connection IDs}
+    - {code: INVALID_PLATFORM_CONNECTION, http: 400, location: top-level, retryable: false, meaning: Platform ID is not a connection owned by the acting user}
+    - {code: INVALID_PLATFORM_ID, http: 400, location: top-level, retryable: false, meaning: A platform key could not be parsed}
+    - {code: POST_NOT_EDITABLE, http: 400, location: top-level, retryable: false, meaning: Post is past the editable draft/scheduled window}
+    - {code: POST_PUBLISH_IN_PROGRESS, http: 409, location: top-level, retryable: conditional, meaning: Publishing already started for the group}
+    - {code: POST_GROUP_VERSION_CONFLICT, http: 409, location: top-level, retryable: true, meaning: Another write committed first; re-read and rebase}
+    - {code: SCHEDULED_TIME_IN_PAST, http: 400, location: top-level, retryable: false, meaning: Strict mode rejected a time >=5 min in the past}
+    - {code: SCHEDULED_TIME_COERCED, http: 200, location: "warnings[]", retryable: false, meaning: Past time clamped to server time during warn-first ramp}
+    - {code: MEDIA_VALIDATION_PENDING, http: 200, location: "warnings[]", retryable: false, meaning: Scheduled while media probing transiently incomplete}
+    - {code: MEDIA_NOT_READY, http: 400, location: top-level, retryable: conditional, meaning: Attached upload bytes missing/uploading/failed}
+    - {code: MEDIA_URL_RATE_LIMITED, http: 429, location: top-level, retryable: true, meaning: 60-URL fixed-window allowance exceeded; Retry-After present}
+  plan_and_workspace:
+    - {code: CHANNEL_LIMIT_REACHED, http: 403, meaning: Adding/attaching would exceed the channel allowance}
+    - {code: SCHEDULE_HORIZON_REACHED, http: 403, meaning: Requested time is farther ahead than the plan permits}
+    - {code: SCHEDULED_POST_LIMIT_REACHED, http: 403, meaning: Active scheduled-post queue is full}
+    - {code: POST_LIMIT_REACHED, http: 403, meaning: Monthly account/connection post allowance exhausted}
+    - {code: PLATFORM_NOT_AVAILABLE, http: 403, meaning: Plan does not allow one or more selected platforms}
+  media_completion:
+    - {code: INVALID_MEDIA_FILE_ID, http: 400}
+    - {code: MEDIA_FILE_NOT_FOUND, http: 404}
+    - {code: MEDIA_FILE_INDETERMINATE_TYPE, http: 400}
+    - {code: PROBE_FAILED, http: 400}
+    - {code: MEDIA_FILE_MISSING_URL, http: 500}
+    - {code: PROBE_VERSION_UNVERIFIED, http: 503, retryable: true}
+    - {code: PROBE_DOWNLOAD_FAILED, http: 503, retryable: true}
+    - {code: PROBE_VERSION_CHANGED, http: 503, retryable: true}
+    - {code: MEDIA_FILE_RACE, http: 409}
+  media_url_ingestion:
+    location: mediaResults[].code
+    batch: all-or-nothing
+    codes: [MEDIA_URL_INVALID, MEDIA_URL_PROTOCOL, MEDIA_URL_CREDENTIALS, MEDIA_URL_PORT, MEDIA_URL_BLOCKED_HOST, MEDIA_URL_DNS, MEDIA_URL_REDIRECT, MEDIA_URL_TOO_MANY_REDIRECTS, MEDIA_URL_HTTP_ERROR, MEDIA_URL_INGEST_TIMEOUT, MEDIA_URL_TOO_LARGE, MEDIA_URL_AGGREGATE_TOO_LARGE, MEDIA_URL_UNSUPPORTED_FORMAT, MEDIA_URL_FETCH_FAILED, MEDIA_URL_PROBE_FAILED, MEDIA_URL_SKIPPED, MEDIA_URL_ROLLED_BACK]
+  analytics:
+    - {code: ANALYTICS_PLAN_REQUIRED, http: 403}
+    - {code: ANALYTICS_REQUEST_TIMEOUT, http: 504, retryable: true}
+    - {code: CONNECTION_NOT_FOUND, http: 200, location: issues}
+    - {code: AUTH_REVOKED, http: 200, location: issues/unavailable}
+    - {code: FORBIDDEN, http: 200, location: issues/unavailable}
+    - {code: RATE_LIMITED, http: 200, location: issues, retryable: true}
+    - {code: FETCH_FAILED, http: 200, location: issues, retryable: true}
+  linkedin_symbolic:
+    field: error
+    codes:
+      - {value: REACTION_ALREADY_EXISTS, http: 409}
+      - {value: LINKEDIN_TOKEN_EXPIRED, http: 401}
+      - {value: LINKEDIN_RATE_LIMITED, http: 429, retryable: true}
+      - {value: LINKEDIN_REQUEST_TIMEOUT, http: 504, retryable: true}
+  validation:
+    location: validation.errors[].code
+    codes: [CONTENT_TOO_LONG, CONTENT_OR_MEDIA_REQUIRED, MEDIA_REQUIRED, MEDIA_SIZE_EXCEEDED, MEDIA_COUNT_EXCEEDED, MEDIA_TYPE_NOT_SUPPORTED, MEDIA_DIMENSIONS_INVALID, MEDIA_ASPECT_RATIO_INVALID, VIDEO_REQUIRED, VIDEO_DURATION_EXCEEDED, VIDEO_DURATION_TOO_SHORT, IMAGES_NOT_SUPPORTED, DOCUMENTS_NOT_SUPPORTED, PLATFORM_SETTING_REQUIRED, PLATFORM_SETTING_INVALID, PLATFORM_NOT_SUPPORTED]

@@ -1,0 +1,16 @@
+generated: '2026-09-11'
+method: generated
+source: openapi/publora-openapi-original.json + conventions/publora-conventions.yml
+skills:
+  - file: publora-schedule-cross-platform-post.md
+    name: Schedule a post across multiple platforms
+    api: openapi/publora-openapi-original.json
+    operations: [getPlatformConnections, createPost, getPost]
+  - file: publora-upload-media-and-publish.md
+    name: Upload media and publish a post
+    api: openapi/publora-openapi-original.json
+    operations: [getUploadUrl, completeMedia, createPost, updatePost]
+  - file: publora-manage-webhooks.md
+    name: Subscribe to post-lifecycle webhooks
+    api: openapi/publora-openapi-original.json
+    operations: [createWebhook, listWebhooks, updateWebhook, regenerateWebhookSecret, deleteWebhook]

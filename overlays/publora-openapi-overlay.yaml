@@ -1,0 +1,24 @@
+overlay: 1.0.0
+info:
+  title: API Evangelist enhancements for Publora API
+  version: 1.0.0
+extends: openapi/publora-openapi-original.json
+actions:
+  - target: $.info
+    update:
+      x-apievangelist-enrichment: '2026-09-11'
+      x-apievangelist-artifacts:
+        conventions: conventions/publora-conventions.yml
+        errors: errors/publora-error-codes.yml
+        webhooks: asyncapi/publora-webhooks.yml
+        mcp: mcp/publora-mcp.yml
+        tool-crosswalk: mcp/publora-tool-crosswalk.yml
+        rate-limits: rate-limits/publora-rate-limits.yml
+        plans: plans/publora-plans-pricing.yml
+  - target: "$.paths['/create-post'].post"
+    update:
+      x-idempotency: { header: Idempotency-Key, coverage: supported }
+      x-reversal: { operation: deletePost, window: while draft or scheduled }
+  - target: "$.paths['/update-post/{postGroupId}'].put"
+    update:
+      x-idempotency: { header: Idempotency-Key, coverage: supported }

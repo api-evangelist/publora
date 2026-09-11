@@ -1,20 +1,38 @@
 name: Publora
-description: 'Social media publishing API and MCP server: schedule and publish across platforms; remote MCP with
-  tools/list.'
+description: >-
+  Publora is a social media scheduling and publishing platform with a REST API
+  and a native remote MCP server. One integration publishes and schedules posts
+  across LinkedIn, X (Twitter), Instagram, Threads, TikTok, YouTube, Facebook,
+  Bluesky, Mastodon, and Telegram, with pre-signed media uploads, per-platform
+  settings, HMAC-signed webhooks for post-lifecycle events, LinkedIn analytics
+  and engagement actions, and a workspace/B2B layer for managed users. It uses
+  long-lived API-key authentication, idempotent create/update operations, and
+  exposes 18 MCP tools callable directly by AI agents (keyless tools/list).
 url: https://raw.githubusercontent.com/api-evangelist/publora/refs/heads/main/apis.yml
 created: '2026-09-11'
 modified: '2026-09-11'
 specificationVersion: '0.21'
+image: https://publora.com/publora-preview.png
 tags:
 - Social Media
 - Publishing
 - Scheduling
 - MCP
 - Content
+- Social Media Management
+- Webhooks
+- AI Agents
 apis:
 - name: Publora API
+  description: >-
+    REST API and remote MCP server for scheduling and publishing social media
+    posts across ten platforms from one integration, with media uploads,
+    per-platform settings, HMAC-signed webhooks, LinkedIn analytics/engagement,
+    and a workspace layer for managed users. API-key authenticated; idempotent
+    create/update; 18 agent-callable MCP tools.
+  image: https://publora.com/publora-preview.png
   humanURL: https://docs.publora.com
-  baseURL: https://api.publora.com
+  baseURL: https://api.publora.com/api/v1
   tags:
   - Social Media
   - Publishing
@@ -22,21 +40,85 @@ apis:
   - MCP
   properties:
   - type: OpenAPI
-    url: https://docs.publora.com/openapi.json
+    url: openapi/publora-openapi-original.json
   - type: Documentation
     url: https://docs.publora.com
+  - type: APIReference
+    url: https://docs.publora.com/endpoints/create-post
+  - type: GettingStarted
+    url: https://docs.publora.com/getting-started
   - type: LLMsTxt
-    url: https://publora.com/llms.txt
+    url: llms/publora-llms.txt
   - type: MCPServer
     url: https://mcp.publora.com/mcp
+  - type: ToolCrosswalk
+    url: mcp/publora-tool-crosswalk.yml
+  - type: Webhooks
+    url: asyncapi/publora-webhooks.yml
   - type: Postman
     url: https://www.postman.com/publora/publora-api/overview
 common:
+- type: AgenticAccess
+  url: agentic-access/publora-agentic-access.yml
+- type: DomainSecurity
+  url: security/publora-domain-security.yml
+- type: Authentication
+  url: authentication/publora-authentication.yml
+- type: Packages
+  url: packages/publora-packages.yml
+- type: SDKs
+  url: packages/publora-packages.yml
+- type: WellKnown
+  url: well-known/publora-well-known.yml
+- type: Conventions
+  url: conventions/publora-conventions.yml
+- type: Idempotency
+  url: conventions/publora-conventions.yml
+- type: ErrorCatalog
+  url: errors/publora-error-codes.yml
+- type: Lifecycle
+  url: lifecycle/publora-lifecycle.yml
+- type: Deprecation
+  url: https://docs.publora.com/changelog
+- type: ChangeLog
+  url: changelog/publora-changelog.yml
+- type: Conformance
+  url: conformance/publora-conformance.yml
+- type: DataModel
+  url: data-model/publora-data-model.yml
+- type: Sandbox
+  url: sandbox/publora-sandbox.yml
+- type: RateLimits
+  url: rate-limits/publora-rate-limits.yml
+- type: Plans
+  url: plans/publora-plans-pricing.yml
+- type: AgentSkill
+  url: skills/_index.yml
+- type: Overlay
+  url: overlays/publora-openapi-overlay.yaml
+- type: Pricing
+  url: https://publora.com/pricing
+- type: SignUp
+  url: https://publora.com
+- type: TermsOfService
+  url: https://publora.com/terms
+- type: PrivacyPolicy
+  url: https://publora.com/privacy
+- type: Blog
+  url: https://publora.com/blog
+- type: GitHubOrganization
+  url: https://github.com/publora
 - type: Website
-  url: https:/
+  url: https://publora.com
 maintainers:
 - FN: Publora
+  email: serge@publora.com
 x-source:
   via: api-search/inbox#29 (publora-team); 31-path OpenAPI, MCP tools/list works keyless, verified.
   fetched: '2026-09-11'
   note: Pointers probed 200, control 404s, spec real, before writing.
+x-enrichment:
+  date: '2026-09-11'
+  status: enriched
+  artifacts_added: 27
+  pass: local-v3

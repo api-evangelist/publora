@@ -1,0 +1,37 @@
+generated: '2026-09-11'
+method: derived
+source: >-
+  openapi/publora-openapi-original.json +
+  well-known/publora-oauth-authorization-server.json +
+  https://docs.publora.com/endpoints/webhooks
+note: >-
+  Social-media publishing has no formal domain interoperability standard, so
+  no domain_standard_conformance is asserted (reward-only). The MCP remote
+  endpoint implements standard OAuth discovery/registration.
+standards:
+  - id: oauth2
+    conforms: true
+    evidence: >-
+      mcp.publora.com serves RFC 8414 authorization-server metadata
+      (authorization_code + refresh_token grants, PKCE S256).
+  - id: oauth2-dynamic-client-registration
+    conforms: true
+    evidence: registration_endpoint https://mcp.publora.com/register (RFC 7591).
+  - id: oauth2-protected-resource-metadata
+    conforms: true
+    evidence: RFC 9728 /.well-known/oauth-protected-resource on mcp.publora.com.
+  - id: pkce
+    conforms: true
+    evidence: code_challenge_methods_supported ["S256"].
+  - id: mcp
+    conforms: true
+    evidence: Streamable-HTTP MCP server, protocolVersion 2025-06-18, tools/list returns 18 tools.
+  - id: rfc9457-problem-details
+    conforms: false
+    evidence: Errors use a custom { error, code, field } JSON envelope, not application/problem+json.
+  - id: webhook-hmac-signing
+    conforms: true
+    evidence: X-Publora-Signature HMAC-SHA256 over the raw event envelope.
+  - id: api-key-auth
+    conforms: true
+    evidence: OpenAPI securityScheme ApiKeyAuth (header x-publora-key).

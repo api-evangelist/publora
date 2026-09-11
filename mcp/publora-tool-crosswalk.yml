@@ -1,0 +1,55 @@
+generated: '2026-09-11'
+method: derived
+source: mcp/publora-mcp.yml + openapi/publora-openapi-original.json
+note: >-
+  Binds each live MCP tool (tools/list, keyless) to its backing OpenAPI
+  operationId. Both surfaces are first-party projections of one core; the
+  MCP tool set is a curated subset of the 36 REST operations plus one
+  MCP-only composite (linkedin_list_mentionables, prune_media_reference).
+surfaces:
+  openapi: openapi/publora-openapi-original.json
+  mcp:
+    url: https://mcp.publora.com/mcp
+    gated: false
+    note: tools/list returns real inputSchemas keyless; execution requires an API key/OAuth.
+  graphql: null
+crosswalk:
+  - {tool: list_connections, category: connections, rest: [getPlatformConnections], binding: rest, confidence: high}
+  - {tool: create_post, category: posts, rest: [createPost], binding: rest, confidence: high}
+  - {tool: get_post, category: posts, rest: [getPost], binding: rest, confidence: high}
+  - {tool: update_post, category: posts, rest: [updatePost], binding: rest, confidence: high}
+  - {tool: delete_post, category: posts, rest: [deletePost], binding: rest, confidence: high}
+  - {tool: get_upload_url, category: media, rest: [getUploadUrl], binding: rest, confidence: high}
+  - {tool: complete_media, category: media, rest: [completeMedia], binding: rest, confidence: high}
+  - {tool: delete_media, category: media, rest: [deleteMedia], binding: rest, confidence: high}
+  - {tool: post_stats, category: analytics, rest: [getPlatformPostStatistics], binding: rest, confidence: high}
+  - {tool: profile_stats, category: analytics, rest: [getPlatformProfileStatistics], binding: rest, confidence: high}
+  - {tool: list_posts, category: posts, rest: [listPosts], binding: rest, confidence: high}
+  - {tool: linkedin_create_reaction, category: linkedin, rest: [addLinkedInReaction], binding: rest, confidence: high}
+  - {tool: linkedin_delete_reaction, category: linkedin, rest: [removeLinkedInReaction], binding: rest, confidence: high}
+  - {tool: linkedin_create_comment, category: linkedin, rest: [createLinkedInComment], binding: rest, confidence: high}
+  - {tool: linkedin_delete_comment, category: linkedin, rest: [deleteLinkedInComment], binding: rest, confidence: high}
+  - {tool: linkedin_create_reshare, category: linkedin, rest: [createLinkedInReshare], binding: rest, confidence: high}
+mcp_only:
+  - tool: prune_media_reference
+    reason: >-
+      Removes a media reference from a post group; no dedicated public REST
+      operation (the REST surface exposes deleteMedia + updatePost instead).
+  - tool: linkedin_list_mentionables
+    reason: >-
+      Searches @-mentionable LinkedIn people/orgs; no public REST operation
+      in the spec (surfaced by the LinkedIn mentions guide only).
+rest_only:
+  - {capability: media-covers, operations: [uploadInstagramCover, uploadYouTubeThumbnail]}
+  - {capability: platform-limits, operations: [getPlatformLimits]}
+  - {capability: connection-health, operations: [testConnection]}
+  - {capability: post-logs, operations: [getPostLogs]}
+  - {capability: linkedin-analytics, operations: [getLinkedInPostStatistics, getLinkedInAccountStatistics, getLinkedInProfileSummary, getLinkedInFollowers]}
+  - {capability: webhooks, operations: [listWebhooks, createWebhook, updateWebhook, deleteWebhook, regenerateWebhookSecret]}
+  - {capability: workspace, operations: [getManagedUsers, createManagedUser, attachManagedUser, detachManagedUser, generateManagedUserApiKey, getConnectionUrl]}
+coverage:
+  tools_named: 18
+  tools_bound_to_rest: 16
+  mcp_only: 2
+  rest_ops_total: 36
+  rest_ops_with_tool: 16

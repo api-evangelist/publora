@@ -1,0 +1,42 @@
+generated: '2026-09-11'
+method: searched
+source: https://registry.npmjs.org/-/v1/search?text=publora
+note: >-
+  Publora does not publish a general-purpose REST client SDK; the docs ship
+  inline code examples in JS/TS/Python/PHP/Ruby/Go instead. The first-party
+  published packages are the official MCP server, plus an n8n community node
+  and a Joplin plugin published under Publora's npm orgs (publora / publora-team).
+packages:
+  - language: javascript
+    registry: npm
+    name: "@publora/mcp-server"
+    url: https://www.npmjs.com/package/@publora/mcp-server
+    install: npx -y @publora/mcp-server
+    bin: publora-mcp
+    repository: https://github.com/publora/mcp-server
+    official: true
+    version: 1.1.0
+    published: '2026-06-01'
+    note: Official local-stdio MCP server; wraps the REST API for MCP clients.
+  - language: javascript
+    registry: npm
+    name: n8n-nodes-publora
+    url: https://www.npmjs.com/package/n8n-nodes-publora
+    install: npm install n8n-nodes-publora
+    repository: https://github.com/publora/n8n-nodes-publora
+    official: true
+    version: 1.0.1
+    published: '2026-06-14'
+    note: n8n community node covering the complete Publora REST API.
+  - language: javascript
+    registry: npm
+    name: "@publora/joplin-plugin-publora"
+    url: https://www.npmjs.com/package/@publora/joplin-plugin-publora
+    install: (installed inside Joplin)
+    repository: https://github.com/publora-team/joplin-publora
+    official: true
+    version: 1.0.1
+    published: '2026-08-18'
+    note: Joplin plugin that publishes/schedules a note via the Publora API.
+absent_registries:
+  - {registry: pypi, name: publora, status: 404}

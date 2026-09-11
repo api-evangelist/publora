@@ -1,0 +1,86 @@
+# Publora
+
+> Social media management platform — schedule posts to 10 platforms, generate content with AI, and connect your AI assistant via MCP.
+
+## Docs
+
+- [Getting Started](https://docs.publora.com/getting-started): Quick start guide with code examples
+- [Authentication](https://docs.publora.com/authentication): API key format and usage
+- [API Reference](https://docs.publora.com/endpoints/create-post): Full REST API documentation
+- [MCP Server](https://docs.publora.com/guides/mcp-server): Connect Claude, Cursor, or any MCP client
+- [MCP Tools Reference](https://docs.publora.com/mcp/tools-reference): 18 available MCP tools
+- [MCP Client Setup](https://docs.publora.com/mcp/client-setup): Setup for Claude Code, Claude Desktop, Cursor, VS Code
+- [Platform Limits](https://docs.publora.com/guides/platform-limits): Character limits, media requirements, rate limits per platform
+- [Validation](https://docs.publora.com/guides/validation): Content and media validation rules
+- [Scheduling](https://docs.publora.com/guides/scheduling): Scheduling workflows and best practices
+- [Media Uploads](https://docs.publora.com/guides/media-uploads): Image and video upload workflow
+- [Rate Limits](https://docs.publora.com/guides/rate-limits): API rate limiting
+- [Error Handling](https://docs.publora.com/guides/error-handling): Error codes and retry strategies
+- [Pricing](https://publora.com/pricing): Plans and limits
+
+## API Endpoints
+
+- [Create Post](https://docs.publora.com/endpoints/create-post): `POST /api/v1/create-post`
+- [Get Post](https://docs.publora.com/endpoints/get-post): `GET /api/v1/get-post/:postGroupId`
+- [List Posts](https://docs.publora.com/endpoints/list-posts): `GET /api/v1/list-posts`
+- [Update Post](https://docs.publora.com/endpoints/update-post): `PUT /api/v1/update-post/:postGroupId`
+- [Delete Post](https://docs.publora.com/endpoints/delete-post): `DELETE /api/v1/delete-post/:postGroupId`
+- [Upload Media](https://docs.publora.com/endpoints/upload-media): `POST /api/v1/get-upload-url`
+- [Platform Connections](https://docs.publora.com/endpoints/platform-connections): `GET /api/v1/platform-connections`
+- [Test Connection](https://docs.publora.com/endpoints/test-connection): `POST /api/v1/test-connection/:platformId`
+- [Post Logs](https://docs.publora.com/endpoints/post-logs): `GET /api/v1/post-logs/:postGroupId`
+- [Webhooks](https://docs.publora.com/endpoints/webhooks): `POST/GET/PATCH/DELETE /api/v1/webhooks`
+- [LinkedIn Post Statistics](https://docs.publora.com/endpoints/linkedin-statistics): `POST /api/v1/linkedin-post-statistics`
+- [LinkedIn Account Statistics](https://docs.publora.com/endpoints/linkedin-statistics): `POST /api/v1/linkedin-account-statistics`
+- [LinkedIn Reactions](https://docs.publora.com/endpoints/linkedin-reactions): `POST/DELETE /api/v1/linkedin-reactions`
+- [LinkedIn Comments](https://docs.publora.com/endpoints/linkedin-comments): `POST/DELETE /api/v1/linkedin-comments`
+- [LinkedIn Followers](https://docs.publora.com/endpoints/linkedin-followers): `POST /api/v1/linkedin-followers`
+- [LinkedIn Profile Summary](https://docs.publora.com/endpoints/linkedin-profile-summary): `POST /api/v1/linkedin-profile-summary`
+
+### Workspace / B2B Endpoints
+
+- [Workspace Guide](https://docs.publora.com/guides/workspace): Managed users, API key generation, white-label
+- `GET /api/v1/workspace/users` — List managed users
+- `POST /api/v1/workspace/users` — Create managed user
+- `DELETE /api/v1/workspace/users/:userId` — Detach managed user
+- `POST /api/v1/workspace/connection-url` — Generate connection URL for user
+- `POST /api/v1/workspace/api-key` — Generate API key for managed user
+
+## Usage Guides
+
+- [Threading](https://docs.publora.com/guides/threading): Multi-part threads for Twitter and Threads
+- [Cross-Platform](https://docs.publora.com/guides/cross-platform): One API call, many platforms
+- [Bulk Scheduling](https://docs.publora.com/guides/bulk-scheduling): CSV import, weekly batches
+
+## Platform Guides
+
+- [LinkedIn](https://docs.publora.com/platforms/linkedin)
+- [X / Twitter](https://docs.publora.com/platforms/x-twitter)
+- [Instagram](https://docs.publora.com/platforms/instagram)
+- [Threads](https://docs.publora.com/platforms/threads)
+- [TikTok](https://docs.publora.com/platforms/tiktok)
+- [YouTube](https://docs.publora.com/platforms/youtube)
+- [Facebook](https://docs.publora.com/platforms/facebook)
+- [Bluesky](https://docs.publora.com/platforms/bluesky)
+- [Mastodon](https://docs.publora.com/platforms/mastodon)
+- [Telegram](https://docs.publora.com/platforms/telegram)
+
+## Code Examples
+
+- [JavaScript](https://docs.publora.com/examples/javascript/quick-start)
+- [TypeScript](https://docs.publora.com/examples/typescript/quick-start)
+- [Python](https://docs.publora.com/examples/python/quick-start)
+- [PHP](https://docs.publora.com/examples/php/quick-start)
+- [Ruby](https://docs.publora.com/examples/ruby/quick-start)
+- [Go](https://docs.publora.com/examples/go/quick-start)
+- [cURL](https://docs.publora.com/examples/curl/all-endpoints)
+- [Next.js](https://docs.publora.com/examples/frameworks/nextjs)
+- [Django](https://docs.publora.com/examples/frameworks/django)
+- [Laravel](https://docs.publora.com/examples/frameworks/laravel)
+- [Zapier](https://docs.publora.com/examples/no-code/zapier-integration)
+- [Make](https://docs.publora.com/examples/no-code/make-integration)
+- [n8n](https://docs.publora.com/examples/no-code/n8n-integration)
+
+## Optional
+
+- [Full Documentation](https://publora.com/llms-full.txt): Complete API reference with all endpoints, parameters, and examples

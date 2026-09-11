@@ -1,0 +1,38 @@
+generated: '2026-09-11'
+method: searched
+source: https://docs.publora.com/endpoints/webhooks
+spec_type: Webhooks
+note: >-
+  Publora publishes no AsyncAPI document; it documents a first-party webhook
+  surface for post-lifecycle events. Webhooks are managed via REST
+  (/api/v1/webhooks CRUD + regenerate-secret) and delivered as signed POSTs.
+delivery:
+  transport: https-post
+  signature:
+    header: X-Publora-Signature
+    algorithm: HMAC-SHA256
+    covers: raw bytes of the { version, event, timestamp, data } envelope
+  event_header: X-Publora-Event
+  envelope_version: "1"
+management_operations:
+  - listWebhooks
+  - createWebhook
+  - updateWebhook
+  - deleteWebhook
+  - regenerateWebhookSecret
+events:
+  - name: post.scheduled
+    description: Post was scheduled.
+    dispatched: true
+  - name: post.published
+    description: Post was successfully published (all seven keys always present; nulls not omitted).
+    dispatched: true
+  - name: post.failed
+    description: Post failed to publish.
+    dispatched: true
+  - name: post.demoted
+    description: A scheduled post was returned to draft after media changed (changeType attach|detach).
+    dispatched: true
+  - name: token.expiring
+    description: Defined and subscribable but NOT currently dispatched — do not depend on it.
+    dispatched: false
