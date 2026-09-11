@@ -1,0 +1,42 @@
+name: Publora
+description: 'Social media publishing API and MCP server: schedule and publish across platforms; remote MCP with
+  tools/list.'
+url: https://raw.githubusercontent.com/api-evangelist/publora/refs/heads/main/apis.yml
+created: '2026-09-11'
+modified: '2026-09-11'
+specificationVersion: '0.21'
+tags:
+- Social Media
+- Publishing
+- Scheduling
+- MCP
+- Content
+apis:
+- name: Publora API
+  humanURL: https://docs.publora.com
+  baseURL: https://api.publora.com
+  tags:
+  - Social Media
+  - Publishing
+  - Scheduling
+  - MCP
+  properties:
+  - type: OpenAPI
+    url: https://docs.publora.com/openapi.json
+  - type: Documentation
+    url: https://docs.publora.com
+  - type: LLMsTxt
+    url: https://publora.com/llms.txt
+  - type: MCPServer
+    url: https://mcp.publora.com/mcp
+  - type: Postman
+    url: https://www.postman.com/publora/publora-api/overview
+common:
+- type: Website
+  url: https:/
+maintainers:
+- FN: Publora
+x-source:
+  via: api-search/inbox#29 (publora-team); 31-path OpenAPI, MCP tools/list works keyless, verified.
+  fetched: '2026-09-11'
+  note: Pointers probed 200, control 404s, spec real, before writing.
