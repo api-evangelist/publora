@@ -1,9 +1,8 @@
 generated: '2026-09-11'
 method: searched
 status: published
-source: >-
-  live tools/list against https://mcp.publora.com/mcp (keyless 200) +
-  https://docs.publora.com/mcp/tools-reference + npm @publora/mcp-server
+source: live tools/list against https://mcp.publora.com/mcp (keyless 200) + https://docs.publora.com/mcp/tools-reference
+  + npm @publora/mcp-server
 server:
   name: publora
   version: 1.0.0
@@ -17,92 +16,95 @@ deployment:
   package: https://www.npmjs.com/package/@publora/mcp-server
   auth: oauth
   verified: probed
+  probe_prior: (never probed)
+  probe: live
+  probe_why: live
+  checked: '2026-09-11'
+  source: claimed-backlog re-probe 2026-09-11
 auth:
-  note: >-
-    tools/list and initialize respond keyless (HTTP 200); executing tools
-    requires an API key. The remote endpoint advertises RFC 8414/9728 OAuth
-    metadata (authorization_code + refresh_token, PKCE S256, dynamic client
-    registration at /register); the local stdio server authenticates with
-    'Authorization: Bearer sk_YOUR_API_KEY'.
+  note: 'tools/list and initialize respond keyless (HTTP 200); executing tools requires an API key. The
+    remote endpoint advertises RFC 8414/9728 OAuth metadata (authorization_code + refresh_token, PKCE
+    S256, dynamic client registration at /register); the local stdio server authenticates with ''Authorization:
+    Bearer sk_YOUR_API_KEY''.'
   oauth_authorization_server: well-known/publora-oauth-authorization-server.json
   oauth_protected_resource: well-known/publora-oauth-protected-resource.json
 tool_count: 18
 tools:
-  - name: list_connections
-    description: List all connected social media accounts.
-    read_only: true
-    source_operation: openapi/publora-openapi-original.json#getPlatformConnections
-  - name: create_post
-    description: Create and (optionally) schedule a post across platforms; supports mediaUrls and idempotencyKey.
-    read_only: false
-    source_operation: openapi/publora-openapi-original.json#createPost
-  - name: get_post
-    description: Get post details and status.
-    read_only: true
-    source_operation: openapi/publora-openapi-original.json#getPost
-  - name: update_post
-    description: Edit a draft or scheduled post (content, platforms, status, scheduledTime, media).
-    read_only: false
-    destructive: true
-    source_operation: openapi/publora-openapi-original.json#updatePost
-  - name: delete_post
-    description: Delete a scheduled post.
-    read_only: false
-    destructive: true
-    source_operation: openapi/publora-openapi-original.json#deletePost
-  - name: get_upload_url
-    description: Get a pre-signed URL for media upload.
-    read_only: false
-    source_operation: openapi/publora-openapi-original.json#getUploadUrl
-  - name: complete_media
-    description: Probe and finalize an uploaded media file.
-    read_only: false
-    source_operation: openapi/publora-openapi-original.json#completeMedia
-  - name: delete_media
-    description: Delete an uploaded media file.
-    read_only: false
-    destructive: true
-    source_operation: openapi/publora-openapi-original.json#deleteMedia
-  - name: prune_media_reference
-    description: Remove a media reference from a post group.
-    read_only: false
-    destructive: true
-    source_operation: null
-  - name: post_stats
-    description: Get Mastodon and Bluesky post statistics.
-    read_only: true
-    source_operation: openapi/publora-openapi-original.json#getPlatformPostStatistics
-  - name: profile_stats
-    description: Get Mastodon and Bluesky profile statistics.
-    read_only: true
-    source_operation: openapi/publora-openapi-original.json#getPlatformProfileStatistics
-  - name: list_posts
-    description: List posts with pagination and filters.
-    read_only: true
-    source_operation: openapi/publora-openapi-original.json#listPosts
-  - name: linkedin_create_reaction
-    description: Add a reaction to a LinkedIn post.
-    read_only: false
-    source_operation: openapi/publora-openapi-original.json#addLinkedInReaction
-  - name: linkedin_delete_reaction
-    description: Remove a reaction from a LinkedIn post.
-    read_only: false
-    destructive: true
-    source_operation: openapi/publora-openapi-original.json#removeLinkedInReaction
-  - name: linkedin_create_comment
-    description: Add a comment to a LinkedIn post.
-    read_only: false
-    source_operation: openapi/publora-openapi-original.json#createLinkedInComment
-  - name: linkedin_delete_comment
-    description: Delete a comment from a LinkedIn post.
-    read_only: false
-    destructive: true
-    source_operation: openapi/publora-openapi-original.json#deleteLinkedInComment
-  - name: linkedin_create_reshare
-    description: Reshare an existing LinkedIn post.
-    read_only: false
-    source_operation: openapi/publora-openapi-original.json#createLinkedInReshare
-  - name: linkedin_list_mentionables
-    description: Search LinkedIn people/organizations that can be @mentioned.
-    read_only: true
-    source_operation: null
+- name: list_connections
+  description: List all connected social media accounts.
+  read_only: true
+  source_operation: openapi/publora-openapi-original.json#getPlatformConnections
+- name: create_post
+  description: Create and (optionally) schedule a post across platforms; supports mediaUrls and idempotencyKey.
+  read_only: false
+  source_operation: openapi/publora-openapi-original.json#createPost
+- name: get_post
+  description: Get post details and status.
+  read_only: true
+  source_operation: openapi/publora-openapi-original.json#getPost
+- name: update_post
+  description: Edit a draft or scheduled post (content, platforms, status, scheduledTime, media).
+  read_only: false
+  destructive: true
+  source_operation: openapi/publora-openapi-original.json#updatePost
+- name: delete_post
+  description: Delete a scheduled post.
+  read_only: false
+  destructive: true
+  source_operation: openapi/publora-openapi-original.json#deletePost
+- name: get_upload_url
+  description: Get a pre-signed URL for media upload.
+  read_only: false
+  source_operation: openapi/publora-openapi-original.json#getUploadUrl
+- name: complete_media
+  description: Probe and finalize an uploaded media file.
+  read_only: false
+  source_operation: openapi/publora-openapi-original.json#completeMedia
+- name: delete_media
+  description: Delete an uploaded media file.
+  read_only: false
+  destructive: true
+  source_operation: openapi/publora-openapi-original.json#deleteMedia
+- name: prune_media_reference
+  description: Remove a media reference from a post group.
+  read_only: false
+  destructive: true
+  source_operation: null
+- name: post_stats
+  description: Get Mastodon and Bluesky post statistics.
+  read_only: true
+  source_operation: openapi/publora-openapi-original.json#getPlatformPostStatistics
+- name: profile_stats
+  description: Get Mastodon and Bluesky profile statistics.
+  read_only: true
+  source_operation: openapi/publora-openapi-original.json#getPlatformProfileStatistics
+- name: list_posts
+  description: List posts with pagination and filters.
+  read_only: true
+  source_operation: openapi/publora-openapi-original.json#listPosts
+- name: linkedin_create_reaction
+  description: Add a reaction to a LinkedIn post.
+  read_only: false
+  source_operation: openapi/publora-openapi-original.json#addLinkedInReaction
+- name: linkedin_delete_reaction
+  description: Remove a reaction from a LinkedIn post.
+  read_only: false
+  destructive: true
+  source_operation: openapi/publora-openapi-original.json#removeLinkedInReaction
+- name: linkedin_create_comment
+  description: Add a comment to a LinkedIn post.
+  read_only: false
+  source_operation: openapi/publora-openapi-original.json#createLinkedInComment
+- name: linkedin_delete_comment
+  description: Delete a comment from a LinkedIn post.
+  read_only: false
+  destructive: true
+  source_operation: openapi/publora-openapi-original.json#deleteLinkedInComment
+- name: linkedin_create_reshare
+  description: Reshare an existing LinkedIn post.
+  read_only: false
+  source_operation: openapi/publora-openapi-original.json#createLinkedInReshare
+- name: linkedin_list_mentionables
+  description: Search LinkedIn people/organizations that can be @mentioned.
+  read_only: true
+  source_operation: null
