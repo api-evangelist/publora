@@ -14,6 +14,15 @@ modified: '2026-09-11'
 specificationVersion: '0.21'
 image: https://publora.com/publora-preview.png
 tags:
+- Social-Media
+- Publishing
+- Scheduling
+- MCP
+- Content
+- Social Media Management
+- Webhook
+- AI Agents
+tags_raw:
 - Social Media
 - Publishing
 - Scheduling
@@ -23,24 +32,16 @@ tags:
 - Webhooks
 - AI Agents
 apis:
-- name: Publora API
-  description: >-
-    REST API and remote MCP server for scheduling and publishing social media
-    posts across ten platforms from one integration, with media uploads,
-    per-platform settings, HMAC-signed webhooks, LinkedIn analytics/engagement,
-    and a workspace layer for managed users. API-key authenticated; idempotent
-    create/update; 18 agent-callable MCP tools.
-  image: https://publora.com/publora-preview.png
+- aid: publora:publora-connections-api
+  name: Publora Connections API
+  description: Manage platform connections
   humanURL: https://docs.publora.com
   baseURL: https://api.publora.com/api/v1
   tags:
-  - Social Media
-  - Publishing
-  - Scheduling
-  - MCP
+  - Connections
   properties:
   - type: OpenAPI
-    url: openapi/publora-openapi-original.json
+    url: openapi/publora-connections-api-openapi.yml
   - type: Documentation
     url: https://docs.publora.com
   - type: APIReference
@@ -49,8 +50,174 @@ apis:
     url: https://docs.publora.com/getting-started
   - type: LLMsTxt
     url: llms/publora-llms.txt
-  - type: MCPServer
-    url: https://mcp.publora.com/mcp
+  - type: ToolCrosswalk
+    url: mcp/publora-tool-crosswalk.yml
+  - type: Webhooks
+    url: asyncapi/publora-webhooks.yml
+  - type: Postman
+    url: https://www.postman.com/publora/publora-api/overview
+- aid: publora:publora-linkedin-analytics-api
+  name: Publora LinkedIn Analytics API
+  description: LinkedIn-specific analytics and interactions
+  humanURL: https://docs.publora.com
+  baseURL: https://api.publora.com/api/v1
+  tags:
+  - LinkedIn Analytics
+  properties:
+  - type: OpenAPI
+    url: openapi/publora-linkedin-analytics-api-openapi.yml
+  - type: Documentation
+    url: https://docs.publora.com
+  - type: APIReference
+    url: https://docs.publora.com/endpoints/create-post
+  - type: GettingStarted
+    url: https://docs.publora.com/getting-started
+  - type: LLMsTxt
+    url: llms/publora-llms.txt
+  - type: ToolCrosswalk
+    url: mcp/publora-tool-crosswalk.yml
+  - type: Webhooks
+    url: asyncapi/publora-webhooks.yml
+  - type: Postman
+    url: https://www.postman.com/publora/publora-api/overview
+- aid: publora:publora-logs-api
+  name: Publora Logs API
+  description: Post logs and debugging
+  humanURL: https://docs.publora.com
+  baseURL: https://api.publora.com/api/v1
+  tags:
+  - Logs
+  properties:
+  - type: OpenAPI
+    url: openapi/publora-logs-api-openapi.yml
+  - type: Documentation
+    url: https://docs.publora.com
+  - type: APIReference
+    url: https://docs.publora.com/endpoints/create-post
+  - type: GettingStarted
+    url: https://docs.publora.com/getting-started
+  - type: LLMsTxt
+    url: llms/publora-llms.txt
+  - type: ToolCrosswalk
+    url: mcp/publora-tool-crosswalk.yml
+  - type: Webhooks
+    url: asyncapi/publora-webhooks.yml
+  - type: Postman
+    url: https://www.postman.com/publora/publora-api/overview
+- aid: publora:publora-media-api
+  name: Publora Media API
+  description: Upload media files
+  humanURL: https://docs.publora.com
+  baseURL: https://api.publora.com/api/v1
+  tags:
+  - Media
+  properties:
+  - type: OpenAPI
+    url: openapi/publora-media-api-openapi.yml
+  - type: Documentation
+    url: https://docs.publora.com
+  - type: APIReference
+    url: https://docs.publora.com/endpoints/create-post
+  - type: GettingStarted
+    url: https://docs.publora.com/getting-started
+  - type: LLMsTxt
+    url: llms/publora-llms.txt
+  - type: ToolCrosswalk
+    url: mcp/publora-tool-crosswalk.yml
+  - type: Webhooks
+    url: asyncapi/publora-webhooks.yml
+  - type: Postman
+    url: https://www.postman.com/publora/publora-api/overview
+- aid: publora:publora-platform-analytics-api
+  name: Publora Platform Analytics API
+  description: On-demand Mastodon and Bluesky post and profile statistics
+  humanURL: https://docs.publora.com
+  baseURL: https://api.publora.com/api/v1
+  tags:
+  - Platform Analytics
+  properties:
+  - type: OpenAPI
+    url: openapi/publora-platform-analytics-api-openapi.yml
+  - type: Documentation
+    url: https://docs.publora.com
+  - type: APIReference
+    url: https://docs.publora.com/endpoints/create-post
+  - type: GettingStarted
+    url: https://docs.publora.com/getting-started
+  - type: LLMsTxt
+    url: llms/publora-llms.txt
+  - type: ToolCrosswalk
+    url: mcp/publora-tool-crosswalk.yml
+  - type: Webhooks
+    url: asyncapi/publora-webhooks.yml
+  - type: Postman
+    url: https://www.postman.com/publora/publora-api/overview
+- aid: publora:publora-posts-api
+  name: Publora Posts API
+  description: Create, update, delete, and list posts
+  humanURL: https://docs.publora.com
+  baseURL: https://api.publora.com/api/v1
+  tags:
+  - Posts
+  properties:
+  - type: OpenAPI
+    url: openapi/publora-posts-api-openapi.yml
+  - type: Documentation
+    url: https://docs.publora.com
+  - type: APIReference
+    url: https://docs.publora.com/endpoints/create-post
+  - type: GettingStarted
+    url: https://docs.publora.com/getting-started
+  - type: LLMsTxt
+    url: llms/publora-llms.txt
+  - type: ToolCrosswalk
+    url: mcp/publora-tool-crosswalk.yml
+  - type: Webhooks
+    url: asyncapi/publora-webhooks.yml
+  - type: Postman
+    url: https://www.postman.com/publora/publora-api/overview
+- aid: publora:publora-webhooks-api
+  name: Publora Webhooks API
+  description: Manage webhook endpoints for real-time notifications
+  humanURL: https://docs.publora.com
+  baseURL: https://api.publora.com/api/v1
+  tags:
+  - Webhooks
+  properties:
+  - type: OpenAPI
+    url: openapi/publora-webhooks-api-openapi.yml
+  - type: Documentation
+    url: https://docs.publora.com
+  - type: APIReference
+    url: https://docs.publora.com/endpoints/create-post
+  - type: GettingStarted
+    url: https://docs.publora.com/getting-started
+  - type: LLMsTxt
+    url: llms/publora-llms.txt
+  - type: ToolCrosswalk
+    url: mcp/publora-tool-crosswalk.yml
+  - type: Webhooks
+    url: asyncapi/publora-webhooks.yml
+  - type: Postman
+    url: https://www.postman.com/publora/publora-api/overview
+- aid: publora:publora-workspace-api
+  name: Publora Workspace API
+  description: Manage multiple users (requires Workspace access - contact support)
+  humanURL: https://docs.publora.com
+  baseURL: https://api.publora.com/api/v1
+  tags:
+  - Workspace
+  properties:
+  - type: OpenAPI
+    url: openapi/publora-workspace-api-openapi.yml
+  - type: Documentation
+    url: https://docs.publora.com
+  - type: APIReference
+    url: https://docs.publora.com/endpoints/create-post
+  - type: GettingStarted
+    url: https://docs.publora.com/getting-started
+  - type: LLMsTxt
+    url: llms/publora-llms.txt
   - type: ToolCrosswalk
     url: mcp/publora-tool-crosswalk.yml
   - type: Webhooks
@@ -58,6 +225,8 @@ apis:
   - type: Postman
     url: https://www.postman.com/publora/publora-api/overview
 common:
+- type: MCPServer
+  url: https://mcp.publora.com/mcp
 - type: AgenticAccess
   url: agentic-access/publora-agentic-access.yml
 - type: DomainSecurity
