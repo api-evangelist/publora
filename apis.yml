@@ -182,6 +182,8 @@ apis:
   humanURL: https://docs.publora.com
   baseURL: https://api.publora.com/api/v1
   tags:
+  - Webhook
+  tags_raw:
   - Webhooks
   properties:
   - type: OpenAPI
