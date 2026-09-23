@@ -1,0 +1,277 @@
+openapi: 3.2.0
+info:
+  title: Publora Connections API
+  description: 'Affordable REST API for scheduling and publishing social media posts
+
+    across X/Twitter, LinkedIn, Instagram, Threads, TikTok, YouTube,
+
+    Facebook, Bluesky, Mastodon, and Telegram.
+
+
+    All plans include full API access. Starting at $5.40/month (yearly) or $9/month.
+
+    14-day free trial, no credit card needed.
+
+
+    ## Workspace API
+
+    The Workspace API allows you to manage multiple users under a single account.
+
+    **To enable Workspace access, please contact Publora support at serge@publora.com.**'
+  version: 1.0.0
+  contact:
+    email: serge@publora.com
+    url: https://publora.com
+servers:
+- url: https://api.publora.com/api/v1
+  description: Production
+security:
+- ApiKeyAuth: []
+tags:
+- name: Connections
+  description: Manage platform connections
+paths:
+  /platform-connections:
+    parameters:
+    - $ref: '#/components/parameters/XPubloraClient'
+    get:
+      summary: List connected social accounts
+      description: Returns all social media accounts connected to your Publora account.
+      operationId: getPlatformConnections
+      tags:
+      - Connections
+      parameters:
+      - name: x-publora-user-id
+        in: header
+        required: false
+        description: Managed user ID (workspace only)
+        schema:
+          type: string
+      responses:
+        '200':
+          description: List of connected accounts
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  connections:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PlatformConnection'
+        '401':
+          description: Invalid API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: Failed to fetch platform connections
+  /test-connection/{platformId}:
+    parameters:
+    - $ref: '#/components/parameters/XPubloraClient'
+    post:
+      summary: Test platform connection health
+      description: 'Validate that a platform connection is working correctly.
+
+        Returns token status, permissions, and last error if any.'
+      operationId: testConnection
+      tags:
+      - Connections
+      parameters:
+      - name: platformId
+        in: path
+        required: true
+        description: 'Platform connection ID (format: platform-id)'
+        schema:
+          type: string
+        example: linkedin-Tz9W5i6ZYG
+      responses:
+        '200':
+          description: Connection test result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  platform:
+                    type: string
+                    example: linkedin
+                  platformId:
+                    type: string
+                    example: linkedin-Tz9W5i6ZYG
+                  username:
+                    type: string
+                    example: John Doe
+                  status:
+                    type: string
+                    enum:
+                    - ok
+                    - error
+                    example: ok
+                  message:
+                    type: string
+                    example: Connection is valid
+                  permissions:
+                    type: array
+                    items:
+                      type: string
+                    example:
+                    - w_member_social
+                    - r_basicprofile
+                  tokenExpiresIn:
+                    type:
+                    - string
+                    - 'null'
+                    example: 29 days
+                  lastSuccessfulPost:
+                    type:
+                    - string
+                    - 'null'
+                    format: date-time
+                  lastError:
+                    $ref: '#/components/schemas/ConnectionLastError'
+        '400':
+          description: Invalid platformId format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Connection not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+components:
+  parameters:
+    XPubloraClient:
+      name: x-publora-client
+      in: header
+      required: false
+      description: Optional client identifier accepted by every API-key-authenticated operation. Any non-empty value is preserved; `api` is used when absent. Setting `mcp` triggers the MCP access entitlement check.
+      schema:
+        type: string
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Human-readable message. Do not match on this string — match on code where present.
+          example: Invalid API key
+        code:
+          type: string
+          description: 'Stable machine-readable error code. Present on the newer error paths
+
+            (scheduling, platformSettings validation, idempotency); older errors
+
+            return `error` only. Always prefer this over the `error` text.
+
+            '
+          example: SCHEDULED_TIME_IN_PAST
+        field:
+          type: string
+          description: '`PLATFORM_SETTING_UNKNOWN` only. The exact dotted path of the rejected
+
+            key, relative to the `platformSettings` object (no `platformSettings.`
+
+            prefix).
+
+            '
+          example: youtube.thumbnail.typo
+        serverTime:
+          type: string
+          format: date-time
+          description: '`SCHEDULED_TIME_IN_PAST` only. Current server time (UTC) when the
+
+            request was rejected — compare against your clock to diagnose skew.
+
+            '
+          example: '2026-03-01T14:02:11.412Z'
+    ConnectionLastError:
+      type:
+      - object
+      - 'null'
+      description: Last connection error, or null
+      properties:
+        message:
+          type: string
+        occurredAt:
+          type: string
+          format: date-time
+    PlatformConnection:
+      type: object
+      properties:
+        platformId:
+          type: string
+          description: Unique ID in format platform-id (e.g., twitter-123456789)
+          example: twitter-123456789
+        username:
+          type: string
+          example: '@yourhandle'
+        displayName:
+          type: string
+          example: Your Name
+        profileImageUrl:
+          type: string
+          format: uri
+          example: https://pbs.twimg.com/profile_images/...
+        profileUrl:
+          type:
+          - string
+          - 'null'
+          format: uri
+          description: URL to the user's profile on the platform. Can be null if not available for the platform.
+          example: https://twitter.com/yourhandle
+        accessTokenExpiresAt:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          description: 'Effective credential expiry, derived the same way as tokenStatus. Null when no authoritative date exists: always for YouTube, and for platforms that do not expire on a schedule (Facebook, X/Twitter, Mastodon, Bluesky). Do not compare this against the current time to decide about reconnecting - read tokenStatus instead.'
+          example: '2026-05-15T10:30:00.000Z'
+        tokenStatus:
+          type: string
+          enum:
+          - valid
+          - expiring_soon
+          - expired
+          - unknown
+          description: Authoritative credential health. Read this to decide whether a reconnect is needed. 'expired' also covers connections the platform revoked, where accessTokenExpiresAt may still be null or in the future.
+          example: valid
+        tokenExpiresIn:
+          type:
+          - string
+          - 'null'
+          description: Human-readable time until token expiration
+          example: 29 days
+        lastSuccessfulPost:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          description: Timestamp of last successful post
+        lastError:
+          $ref: '#/components/schemas/ConnectionLastError'
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: x-publora-key
+      description: 'API key from Settings > API Keys. Format: sk_timestamp.hexstring'

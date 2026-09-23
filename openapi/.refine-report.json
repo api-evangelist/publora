@@ -1,0 +1,34 @@
+{
+  "provider": "publora",
+  "sources": [
+    "_original/publora-openapi-original.json"
+  ],
+  "outputs": [
+    "publora-connections-api-openapi.yml",
+    "publora-linkedin-analytics-api-openapi.yml",
+    "publora-logs-api-openapi.yml",
+    "publora-media-api-openapi.yml",
+    "publora-platform-analytics-api-openapi.yml",
+    "publora-posts-api-openapi.yml",
+    "publora-webhooks-api-openapi.yml",
+    "publora-workspace-api-openapi.yml"
+  ],
+  "archived": [],
+  "errors": [],
+  "warnings": [],
+  "notes": [
+    "sourced from openapi/_original/ (1 archived document(s)); previously refined output at the top level was skipped rather than re-split",
+    "publora-openapi-original.json: upgraded openapi 3.0.3 -> OpenAPI 3.2.0",
+    "apis.yml register: already-registered"
+  ],
+  "skipped": [
+    "publora-connections-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "publora-linkedin-analytics-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "publora-logs-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "publora-media-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "publora-platform-analytics-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "publora-posts-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "publora-webhooks-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "publora-workspace-api-openapi.yml: previously refined output, superseded by openapi/_original/"
+  ]
+}

@@ -1,0 +1,176 @@
+openapi: 3.2.0
+info:
+  title: Publora Logs API
+  description: 'Affordable REST API for scheduling and publishing social media posts
+
+    across X/Twitter, LinkedIn, Instagram, Threads, TikTok, YouTube,
+
+    Facebook, Bluesky, Mastodon, and Telegram.
+
+
+    All plans include full API access. Starting at $5.40/month (yearly) or $9/month.
+
+    14-day free trial, no credit card needed.
+
+
+    ## Workspace API
+
+    The Workspace API allows you to manage multiple users under a single account.
+
+    **To enable Workspace access, please contact Publora support at serge@publora.com.**'
+  version: 1.0.0
+  contact:
+    email: serge@publora.com
+    url: https://publora.com
+servers:
+- url: https://api.publora.com/api/v1
+  description: Production
+security:
+- ApiKeyAuth: []
+tags:
+- name: Logs
+  description: Post logs and debugging
+paths:
+  /post-logs/{postGroupId}:
+    parameters:
+    - $ref: '#/components/parameters/XPubloraClient'
+    get:
+      summary: Get post publishing logs
+      description: 'Retrieve detailed logs for a post group showing the publishing process,
+
+        including scheduling, processing, success, and failure events.'
+      operationId: getPostLogs
+      tags:
+      - Logs
+      parameters:
+      - name: postGroupId
+        in: path
+        required: true
+        schema:
+          type: string
+        example: 507f1f77bcf86cd799439011
+      responses:
+        '200':
+          description: Post logs
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  logs:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PostLog'
+        '404':
+          description: Post group not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+components:
+  schemas:
+    PostLog:
+      type: object
+      properties:
+        _id:
+          type: string
+        postGroupId:
+          type: string
+        platform:
+          type: string
+        postId:
+          type: string
+        event:
+          type: string
+          enum:
+          - scheduled
+          - processing
+          - publish_attempted
+          - publish_succeeded
+          - publish_failed
+          - publish_retry
+          - status_changed
+          - media_finalize_succeeded
+          - media_finalize_failed
+          - linkedin_document_upload_succeeded
+          - linkedin_document_upload_failed
+          description: Stable PostLog event type
+        error:
+          type: string
+          description: Optional; omitted when no error was stored
+        httpStatus:
+          type:
+          - integer
+          - 'null'
+          description: Optional; may be null or omitted when not applicable
+        retryCount:
+          type: integer
+          description: Optional; omitted when no value was stored
+        metadata:
+          type: object
+          additionalProperties: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Human-readable message. Do not match on this string — match on code where present.
+          example: Invalid API key
+        code:
+          type: string
+          description: 'Stable machine-readable error code. Present on the newer error paths
+
+            (scheduling, platformSettings validation, idempotency); older errors
+
+            return `error` only. Always prefer this over the `error` text.
+
+            '
+          example: SCHEDULED_TIME_IN_PAST
+        field:
+          type: string
+          description: '`PLATFORM_SETTING_UNKNOWN` only. The exact dotted path of the rejected
+
+            key, relative to the `platformSettings` object (no `platformSettings.`
+
+            prefix).
+
+            '
+          example: youtube.thumbnail.typo
+        serverTime:
+          type: string
+          format: date-time
+          description: '`SCHEDULED_TIME_IN_PAST` only. Current server time (UTC) when the
+
+            request was rejected — compare against your clock to diagnose skew.
+
+            '
+          example: '2026-03-01T14:02:11.412Z'
+  parameters:
+    XPubloraClient:
+      name: x-publora-client
+      in: header
+      required: false
+      description: Optional client identifier accepted by every API-key-authenticated operation. Any non-empty value is preserved; `api` is used when absent. Setting `mcp` triggers the MCP access entitlement check.
+      schema:
+        type: string
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: x-publora-key
+      description: 'API key from Settings > API Keys. Format: sk_timestamp.hexstring'

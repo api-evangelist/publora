@@ -1,0 +1,33 @@
+# Front Door AI Index — publora — 2026-09-17
+# AI vocabulary counted on the provider's root page. Generated; do not edit.
+# `score` is null unless ownership is `own` — see front_door_ai.py.
+front_door_ai:
+  slug: publora
+  lexicon_version: '1.0'
+  probed_at: '2026-09-17'
+  host: publora.com
+  final_host: publora.com
+  ownership: own
+  owner: publora
+  shares_host_with: null
+  inherited_from: null
+  verdict: scored
+  score: 41
+  host_score: 41
+  density: 32.59
+  words: 1258
+  tiers:
+    agentic: 15
+    core: 21
+    model: 5
+  ambiguous: 11
+  top_terms:
+    AI: 21
+    MCP: 7
+    agent: 7
+    Claude: 5
+    AI agent: 4
+    AI assistant: 3
+    automation: 2
+    smart: 2
+    model context protocol: 1

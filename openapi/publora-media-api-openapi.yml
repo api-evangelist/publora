@@ -1,0 +1,615 @@
+openapi: 3.2.0
+info:
+  title: Publora Media API
+  description: 'Affordable REST API for scheduling and publishing social media posts
+
+    across X/Twitter, LinkedIn, Instagram, Threads, TikTok, YouTube,
+
+    Facebook, Bluesky, Mastodon, and Telegram.
+
+
+    All plans include full API access. Starting at $5.40/month (yearly) or $9/month.
+
+    14-day free trial, no credit card needed.
+
+
+    ## Workspace API
+
+    The Workspace API allows you to manage multiple users under a single account.
+
+    **To enable Workspace access, please contact Publora support at serge@publora.com.**'
+  version: 1.0.0
+  contact:
+    email: serge@publora.com
+    url: https://publora.com
+servers:
+- url: https://api.publora.com/api/v1
+  description: Production
+security:
+- ApiKeyAuth: []
+tags:
+- name: Media
+  description: Upload media files
+paths:
+  /media/{mediaId}:
+    parameters:
+    - $ref: '#/components/parameters/XPubloraClient'
+    delete:
+      summary: Delete an uploaded media file
+      description: 'Delete a media record and its stored object. If the media belonged to a
+
+        scheduled post, the post is demoted to draft and must be scheduled again.
+
+        Media cannot be removed while its post is publishing or after the group
+
+        has reached published or failed status.'
+      operationId: deleteMedia
+      tags:
+      - Media
+      parameters:
+      - name: mediaId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Media deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - success
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  postGroupDemoted:
+                    type: boolean
+                  message:
+                    type: string
+                  groupAlreadyMissing:
+                    type: boolean
+                  mediaWasOrphan:
+                    type: boolean
+                  thumbnailCleared:
+                    type: boolean
+                  coverCleared:
+                    type: boolean
+        '400':
+          description: Invalid media ID, or media belongs to a published or failed post
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Media file not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Post is publishing or changed state concurrently; retry later
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Failed to delete media
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /get-upload-url:
+    parameters:
+    - $ref: '#/components/parameters/XPubloraClient'
+    post:
+      summary: Get pre-signed URL for media upload
+      description: 'Get a pre-signed S3 URL to upload images, videos, or PDF documents.
+
+        Upload the file directly to S3 via HTTP PUT, then create a post.
+
+        Upload URLs expire in 1 hour. The image count per post is
+
+        platform-specific (up to 4 for Twitter/X, Bluesky, Mastodon; up to 10
+
+        for Instagram, LinkedIn, Facebook, Telegram; up to 20 for Threads), or 1 video per
+
+        post. Attach multiple images to the same postGroupId to form a carousel;
+
+        these post-media count rules do not apply to PDF document assets.'
+      operationId: getUploadUrl
+      tags:
+      - Media
+      parameters:
+      - name: x-publora-user-id
+        in: header
+        required: false
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - fileName
+              - contentType
+              - postGroupId
+              properties:
+                fileName:
+                  type: string
+                  example: photo.jpg
+                contentType:
+                  type: string
+                  description: MIME type. It must match an image/*, video/*, or application/pdf upload.
+                  example: image/jpeg
+                type:
+                  type: string
+                  enum:
+                  - image
+                  - video
+                  - document
+                  description: Optional media-type hint; inferred from contentType when omitted
+                  example: image
+                postGroupId:
+                  type: string
+                  description: Post group to attach media to
+                  example: 507f1f77bcf86cd799439011
+      responses:
+        '200':
+          description: Upload URL generated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  uploadUrl:
+                    type: string
+                    format: uri
+                    description: Pre-signed S3 URL. PUT your file here.
+                  fileUrl:
+                    type: string
+                    format: uri
+                    description: Public URL after upload
+                  mediaId:
+                    type: string
+                    description: Media record ID
+        '400':
+          description: Missing required fields
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                missingFields:
+                  value:
+                    error: fileName, contentType, and postGroupId are required
+                invalidPostGroupId:
+                  value:
+                    error: Invalid postGroupId
+                unsupportedContentType:
+                  value:
+                    error: Only video, image, and PDF files are allowed
+        '401':
+          description: Invalid API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                serverError:
+                  value:
+                    error: Server error
+  /complete-media/{mediaFileId}:
+    parameters:
+    - $ref: '#/components/parameters/XPubloraClient'
+    post:
+      summary: Probe and finalize an uploaded media file
+      description: 'Optionally run the server-side media probe immediately after uploading
+
+        bytes to the pre-signed URL. This call is not required: scheduling also
+
+        probes media that is still uploading.'
+      operationId: completeMedia
+      tags:
+      - Media
+      parameters:
+      - name: mediaFileId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Media probe completed
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - success
+                - mediaFile
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  mediaFile:
+                    type: object
+                    required:
+                    - _id
+                    properties:
+                      _id:
+                        type: string
+                      type:
+                        type:
+                        - string
+                        - 'null'
+                      mimeType:
+                        type:
+                        - string
+                        - 'null'
+                      fileName:
+                        type:
+                        - string
+                        - 'null'
+                      url:
+                        type:
+                        - string
+                        - 'null'
+                        format: uri
+                      status:
+                        type:
+                        - string
+                        - 'null'
+                      metadata:
+                        type:
+                        - object
+                        - 'null'
+                        additionalProperties: true
+        '400':
+          description: Invalid media ID or uploaded media failed validation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Media file not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Media was deleted or failed concurrently while being probed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Failed to complete media upload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Media probe service or uploaded object is temporarily unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /upload-instagram-cover:
+    parameters:
+    - $ref: '#/components/parameters/XPubloraClient'
+    post:
+      summary: Upload a custom Instagram Reel cover image
+      description: 'Upload a cover image for an Instagram Reel. The image is stored as a
+
+        JPEG (PNG/WebP are transcoded server-side; transparency is flattened
+
+        onto white) and a public URL is returned. Set that URL as
+
+        platformSettings.instagram.coverUrl via update-post to use it as the
+
+        Reel cover. The target post group must be an editable (draft or
+
+        scheduled) post you own and not currently publishing.
+
+        Covers apply to Reels only and are ignored for Stories and images.'
+      operationId: uploadInstagramCover
+      tags:
+      - Media
+      parameters:
+      - name: x-publora-user-id
+        in: header
+        required: false
+        description: Managed user ID (workspace only)
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+              - cover
+              - postGroupId
+              properties:
+                cover:
+                  type: string
+                  format: binary
+                  description: Cover image (JPEG, PNG, or WebP; 8 MB max). PNG/WebP are converted to JPEG.
+                postGroupId:
+                  type: string
+                  description: Editable post group (draft or scheduled) to attach the cover to
+                  example: 507f1f77bcf86cd799439011
+      responses:
+        '200':
+          description: Cover uploaded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  cover:
+                    type: object
+                    properties:
+                      mediaId:
+                        type: string
+                        description: Cover media record ID
+                        example: 665f8a1b2c3d4e5f6a7b8c9d
+                      url:
+                        type: string
+                        format: uri
+                        description: Public JPEG URL — set as platformSettings.instagram.coverUrl via update-post
+                        example: https://media.publora.com/images/665f...-reel-cover.jpg
+                  message:
+                    type: string
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                missingPostGroupId:
+                  value:
+                    error: postGroupId is required
+                invalidPostGroupId:
+                  value:
+                    error: Invalid postGroupId
+                missingFile:
+                  value:
+                    error: cover file is required
+                badType:
+                  value:
+                    error: Instagram covers must be JPEG, PNG, or WebP images
+                tooLarge:
+                  value:
+                    error: Instagram covers must be 8 MB or smaller
+                tooLargeAfterTranscode:
+                  value:
+                    error: Instagram cover exceeds 8 MB after JPEG conversion; use a smaller image
+                nonEditable:
+                  value:
+                    error: Cannot upload Instagram cover for a non-editable post
+        '401':
+          description: Invalid API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Post group not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: Post group not found
+        '409':
+          description: Post group is currently publishing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: Post group is currently being published; cannot upload Instagram cover. Retry once publishing completes.
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: Failed to upload Instagram cover
+  /upload-youtube-thumbnail:
+    parameters:
+    - $ref: '#/components/parameters/XPubloraClient'
+    post:
+      summary: Upload a custom YouTube video thumbnail
+      description: 'Upload a custom thumbnail for a YouTube video post. The image is stored
+
+        as Publora-tracked media and a mediaId + url are returned; attach them
+
+        via platformSettings.youtube.thumbnail on update-post. A thumbnail
+
+        cannot be set on create-post — the upload requires an existing
+
+        postGroupId (draft or scheduled) that is not currently publishing.
+
+        JPEG or PNG, 2 MB max, minimum 640x360 px (1280x720 recommended).'
+      operationId: uploadYouTubeThumbnail
+      tags:
+      - Media
+      parameters:
+      - name: x-publora-user-id
+        in: header
+        required: false
+        description: Managed user ID (workspace only)
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+              - thumbnail
+              - postGroupId
+              properties:
+                thumbnail:
+                  type: string
+                  format: binary
+                  description: Thumbnail image (JPEG or PNG; 2 MB max; min 640x360 px, 1280x720 recommended).
+                postGroupId:
+                  type: string
+                  description: Editable post group (draft or scheduled) to attach the thumbnail to
+                  example: 507f1f77bcf86cd799439011
+      responses:
+        '200':
+          description: Thumbnail uploaded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  thumbnail:
+                    type: object
+                    properties:
+                      mediaId:
+                        type: string
+                        description: Thumbnail media record ID — set as platformSettings.youtube.thumbnail.mediaId via update-post
+                        example: 665f8a1b2c3d4e5f6a7b8c9d
+                      url:
+                        type: string
+                        format: uri
+                        description: Public thumbnail URL — set as platformSettings.youtube.thumbnail.url via update-post
+                        example: https://media.publora.com/images/665f...-thumb.jpg
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                missingPostGroupId:
+                  value:
+                    error: postGroupId is required
+                invalidPostGroupId:
+                  value:
+                    error: Invalid postGroupId
+                missingFile:
+                  value:
+                    error: thumbnail file is required
+                badType:
+                  value:
+                    error: YouTube thumbnails must be JPEG or PNG images
+                tooLarge:
+                  value:
+                    error: YouTube thumbnails must be 2 MB or smaller
+                tooSmall:
+                  value:
+                    error: YouTube thumbnails must be at least 640x360 pixels
+                nonEditable:
+                  value:
+                    error: Cannot upload YouTube thumbnail for a non-editable post
+        '401':
+          description: Invalid API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Post group not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: Post group not found
+        '409':
+          description: Post group is currently publishing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: Post group is currently being published; cannot upload YouTube thumbnail. Retry once publishing completes.
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: Failed to upload YouTube thumbnail
+components:
+  parameters:
+    XPubloraClient:
+      name: x-publora-client
+      in: header
+      required: false
+      description: Optional client identifier accepted by every API-key-authenticated operation. Any non-empty value is preserved; `api` is used when absent. Setting `mcp` triggers the MCP access entitlement check.
+      schema:
+        type: string
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Human-readable message. Do not match on this string — match on code where present.
+          example: Invalid API key
+        code:
+          type: string
+          description: 'Stable machine-readable error code. Present on the newer error paths
+
+            (scheduling, platformSettings validation, idempotency); older errors
+
+            return `error` only. Always prefer this over the `error` text.
+
+            '
+          example: SCHEDULED_TIME_IN_PAST
+        field:
+          type: string
+          description: '`PLATFORM_SETTING_UNKNOWN` only. The exact dotted path of the rejected
+
+            key, relative to the `platformSettings` object (no `platformSettings.`
+
+            prefix).
+
+            '
+          example: youtube.thumbnail.typo
+        serverTime:
+          type: string
+          format: date-time
+          description: '`SCHEDULED_TIME_IN_PAST` only. Current server time (UTC) when the
+
+            request was rejected — compare against your clock to diagnose skew.
+
+            '
+          example: '2026-03-01T14:02:11.412Z'
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: x-publora-key
+      description: 'API key from Settings > API Keys. Format: sk_timestamp.hexstring'

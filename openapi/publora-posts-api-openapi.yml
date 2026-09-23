@@ -1,0 +1,1519 @@
+openapi: 3.2.0
+info:
+  title: Publora Posts API
+  description: 'Affordable REST API for scheduling and publishing social media posts
+
+    across X/Twitter, LinkedIn, Instagram, Threads, TikTok, YouTube,
+
+    Facebook, Bluesky, Mastodon, and Telegram.
+
+
+    All plans include full API access. Starting at $5.40/month (yearly) or $9/month.
+
+    14-day free trial, no credit card needed.
+
+
+    ## Workspace API
+
+    The Workspace API allows you to manage multiple users under a single account.
+
+    **To enable Workspace access, please contact Publora support at serge@publora.com.**'
+  version: 1.0.0
+  contact:
+    email: serge@publora.com
+    url: https://publora.com
+servers:
+- url: https://api.publora.com/api/v1
+  description: Production
+security:
+- ApiKeyAuth: []
+tags:
+- name: Posts
+  description: Create, update, delete, and list posts
+paths:
+  /platform-limits:
+    parameters:
+    - $ref: '#/components/parameters/XPubloraClient'
+    get:
+      summary: Get live per-platform posting limits
+      description: 'Return Publora''s per-platform limits (characters, images, videos,
+
+        documents, GIFs, thumbnails, and requirements) as live JSON, sourced
+
+        from the shared @publora/platform-limits package. These are the
+
+        API-specific limits Publora validates against before scheduling — use
+
+        them to drive client-side validation instead of hard-coding values.
+
+        No parameters.'
+      operationId: getPlatformLimits
+      tags:
+      - Posts
+      responses:
+        '200':
+          description: Per-platform limits
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  schemaVersion:
+                    type: integer
+                    example: 1
+                  source:
+                    type: string
+                    example: '@publora/platform-limits'
+                  packageVersion:
+                    type: string
+                    example: 1.0.0
+                  limitsLastUpdated:
+                    type: string
+                    example: '2026-03-11'
+                  supportedPlatforms:
+                    type: array
+                    items:
+                      type: string
+                    example:
+                    - twitter
+                    - instagram
+                    - threads
+                    - tiktok
+                    - linkedin
+                    - youtube
+                    - facebook
+                    - mastodon
+                    - bluesky
+                    - telegram
+                    - pinterest
+                  platforms:
+                    type: object
+                    description: Keyed by platform. Each value carries platform, displayName, characters, images, videos, requirements, plus documents, gifs, and thumbnails (null when the platform has no distinct spec).
+                    additionalProperties:
+                      type: object
+        '401':
+          description: Invalid API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /create-post:
+    parameters:
+    - $ref: '#/components/parameters/XPubloraClient'
+    post:
+      summary: Create and schedule a social media post
+      description: 'Create a post to be published across one or more social media platforms.
+
+        Supports text, images, and video (1 video per post).
+
+        The image count per post is platform-specific: Twitter/X, Bluesky, and
+
+        Mastodon allow up to 4; Instagram, LinkedIn, Facebook, and Telegram
+
+        allow up to 10; Threads allows up to 20. There is no separate
+
+        "carousel" field — a
+
+        carousel is formed implicitly by attaching multiple images to one
+
+        postGroupId (Instagram: 2-10 images = carousel, 1 image = single photo),
+
+        in upload order. See the Media Uploads guide for the full matrix.
+
+        If scheduledTime is provided, the post will be published at that time.
+
+        If omitted, the post is saved as a draft.'
+      operationId: createPost
+      tags:
+      - Posts
+      parameters:
+      - name: x-publora-user-id
+        in: header
+        required: false
+        description: Managed user ID (workspace only)
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        required: false
+        description: "Opt-in idempotency. Omit the header for the previous behaviour —\nevery call creates a new post.\n\nSend a unique value (a UUID is a good choice) per logical operation\nto make retries safe:\n\n- Same key + identical body, original request finished → the original\n  status code and response body are replayed. No second post.\n- Same key + identical body, original request still in flight → `409`\n  (`IDEMPOTENCY_IN_FLIGHT`). Retry shortly.\n- Same key + different body → `422` (`IDEMPOTENCY_KEY_CONFLICT`).\n  Nothing is created.\n\nKeys are scoped to the acting user (the managed user when\n`x-publora-user-id` is set), so they never collide across accounts.\nRecords expire 24 hours after they are created; reusing a key after\nthat window is treated as a brand-new request.\n"
+        schema:
+          type: string
+        example: 6f1e2d3c-4b5a-4c7d-8e9f-0a1b2c3d4e5f
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - platforms
+              properties:
+                content:
+                  type: string
+                  description: Normally required and non-empty. May be omitted or empty only when a targeted LinkedIn connection has repost intent via platformSettings.linkedin.repostEnabled=true or a non-empty repostParentUrn; repost validation still requires a valid parent/setting combination.
+                  example: 'Excited to share our new product launch! 🚀 #launch'
+                platforms:
+                  type: array
+                  items:
+                    type: string
+                  description: 'Array of platform connection IDs (format: platform-platformId). Each ID must appear at most once; a repeated ID is rejected with 400 "Platforms must not contain duplicates".'
+                  example:
+                  - twitter-123456789
+                  - linkedin-ABC123
+                scheduledTime:
+                  type: string
+                  format: date-time
+                  description: 'ISO 8601 UTC datetime for scheduling. Omit for draft.
+
+
+                    If the time is in the past, it is clamped to the current server
+
+                    time and a `SCHEDULED_TIME_COERCED` warning is returned — the
+
+                    post is still created. Read the `scheduledTime` in the response
+
+                    for the time actually stored.
+
+
+                    Times less than 5 minutes in the past are always tolerated this
+
+                    way. Strict rejection for a time 5 or more minutes in the past
+
+                    is scheduled to begin on **2026-08-25**, unless production
+
+                    configuration overrides that date. Before strict mode it is
+
+                    clamped with a warning. Send a future time to avoid both.
+
+                    '
+                  example: '2027-03-01T14:00:00.000Z'
+                platformSettings:
+                  $ref: '#/components/schemas/PlatformSettingsInput'
+                mediaUrls:
+                  type: array
+                  minItems: 1
+                  maxItems: 10
+                  items:
+                    type: string
+                    format: uri
+                  description: 'Public https URLs downloaded server-side. Images: 25 MB each; videos: 150 MB each; aggregate: 300 MB. Ingestion is all-or-nothing.'
+      responses:
+        '200':
+          description: Post created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  postGroupId:
+                    type: string
+                    example: 507f1f77bcf86cd799439011
+                  scheduledTime:
+                    type:
+                    - string
+                    - 'null'
+                    format: date-time
+                    description: 'The effective scheduled time that was actually stored. Always
+
+                      present. `null` when the post was saved as a draft (no
+
+                      scheduledTime sent). This may differ from the value you sent
+
+                      — if so, a `SCHEDULED_TIME_COERCED` warning explains why.
+
+                      Trust this field over your requested value.
+
+                      '
+                    example: '2026-03-01T14:00:00.000Z'
+                  warnings:
+                    type: array
+                    description: 'Non-fatal notices about a request that still succeeded. Only
+
+                      present when at least one warning applies.
+
+                      '
+                    items:
+                      $ref: '#/components/schemas/Warning'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                missingContent:
+                  value:
+                    error: Content is required
+                invalidTime:
+                  value:
+                    error: Invalid scheduled time format
+                pastTime:
+                  summary: scheduledTime 5+ minutes in the past (strict mode)
+                  value:
+                    error: Scheduled time is in the past. Server time is 2026-09-01T14:02:11.412Z UTC.
+                    code: SCHEDULED_TIME_IN_PAST
+                    serverTime: '2026-09-01T14:02:11.412Z'
+                unknownPlatformSetting:
+                  summary: Unrecognised platformSettings path — nothing was created
+                  value:
+                    error: 'Unknown platformSettings path: youtube.thumbnail.typo'
+                    code: PLATFORM_SETTING_UNKNOWN
+                    field: youtube.thumbnail.typo
+                idempotencyBodyTooComplex:
+                  summary: Idempotency-Key sent with an excessively nested body
+                  value:
+                    error: Idempotency-Key request body is too deeply nested
+                    code: IDEMPOTENCY_BODY_TOO_COMPLEX
+        '401':
+          description: Invalid API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Access entitlement or plan limit denied; inspect the returned code/error rather than matching an example string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: 'An earlier request with this `Idempotency-Key` is still in flight.
+
+            Nothing was created by this call — retry shortly to receive the
+
+            original response. Match on `code`; the `error` text varies.
+
+            '
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                inFlight:
+                  value:
+                    error: A request with this idempotency key is still in flight
+                    code: IDEMPOTENCY_IN_FLIGHT
+                superseded:
+                  value:
+                    error: Idempotency claim was superseded by another request
+                    code: IDEMPOTENCY_IN_FLIGHT
+        '422':
+          description: 'This `Idempotency-Key` was already used with a different request body.
+
+            Nothing was created — either replay the original body, or retry with a
+
+            new key.
+
+            '
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: Idempotency key was already used with a different request body
+                code: IDEMPOTENCY_KEY_CONFLICT
+        '429':
+          description: Media URL ingestion rate limit (60 URLs per fixed one-hour window)
+          headers:
+            Retry-After:
+              schema:
+                type: integer
+              description: Seconds until retry
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MediaUrlRateLimitError'
+              example:
+                error: Media URL ingestion rate limit reached (60 URLs/hour). Retry later or use the presigned get-upload-url flow.
+                code: MEDIA_URL_RATE_LIMITED
+                retryAfterSec: 60
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /get-post/{postGroupId}:
+    parameters:
+    - $ref: '#/components/parameters/XPubloraClient'
+    get:
+      summary: Get post details and status
+      description: Retrieve the details, platform statuses, and posted IDs for a post group.
+      operationId: getPost
+      tags:
+      - Posts
+      parameters:
+      - name: postGroupId
+        in: path
+        required: true
+        schema:
+          type: string
+        example: 507f1f77bcf86cd799439011
+      - name: x-publora-user-id
+        in: header
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Post details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  postGroupId:
+                    type: string
+                  status:
+                    type: string
+                    enum:
+                    - draft
+                    - scheduled
+                    - published
+                    - failed
+                    - partially_published
+                    description: Post-group status. Always present.
+                  scheduledTime:
+                    type:
+                    - string
+                    - 'null'
+                    format: date-time
+                    description: 'The effective scheduled time stored for this post group.
+
+                      Always present; `null` for drafts and for groups that were
+
+                      never given a time.
+
+                      '
+                    example: '2026-03-01T14:00:00.000Z'
+                  platformSettings:
+                    type: object
+                    description: 'Per-platform settings currently stored on this post group,
+
+                      keyed by platform. Always present; `{}` when none are set.
+
+                      Mirrors the platformSettings accepted by /create-post and
+
+                      /update-post.
+
+                      '
+                    example:
+                      youtube:
+                        privacy: public
+                        madeForKids: false
+                  platforms:
+                    type: array
+                    items:
+                      type: string
+                    description: 'Platform connection IDs targeted by this post group (format:
+
+                      platform-platformId). Always present; `[]` when none.
+
+                      '
+                    example:
+                    - twitter-123456789
+                    - linkedin-ABC123
+                  posts:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Post'
+                  media:
+                    type: array
+                    description: Attached media inventory in post-group order. Always present; empty when none is attached.
+                    items:
+                      type: object
+                      properties:
+                        mediaId:
+                          type: string
+                        sourceFileName:
+                          type:
+                          - string
+                          - 'null'
+                        fileName:
+                          type:
+                          - string
+                          - 'null'
+                        type:
+                          type:
+                          - string
+                          - 'null'
+                        mimeType:
+                          type:
+                          - string
+                          - 'null'
+                        status:
+                          type: string
+                        failureReason:
+                          type:
+                          - string
+                          - 'null'
+                        url:
+                          type:
+                          - string
+                          - 'null'
+        '404':
+          description: Post not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /update-post/{postGroupId}:
+    parameters:
+    - $ref: '#/components/parameters/XPubloraClient'
+    put:
+      summary: Edit a draft or scheduled post
+      description: 'Modify the content, target platforms, scheduled time, status, platformSettings,
+
+        or mediaUrls of an existing draft or scheduled post.
+
+        Only post groups whose status is draft or scheduled can be updated. `pending`
+
+        and `processing` belong to separate processing/per-platform state, not
+
+        to the post-group status enum.
+
+        At least one of status, scheduledTime, content, platforms, platformSettings, or
+
+        mediaUrls must be provided. Every field is a patch — omit it to leave the stored
+
+        value unchanged.
+
+        `content` replaces the base text and rewrites each platform post to its effective
+
+        content, preserving explicit per-account overrides. `platforms` replaces the whole
+
+        target set (it is not merged); added connections are validated for ownership and
+
+        plan entitlement, and adding a target to a scheduled post re-runs scheduling
+
+        quota and post validation.
+
+        platformSettings are merged per-platform with existing settings —
+
+        omitted fields are preserved.
+
+        Updating a post group also updates all associated platform-specific posts.
+
+        A content or platform edit is refused with POST_NOT_EDITABLE (400) or
+
+        POST_PUBLISH_IN_PROGRESS / POST_GROUP_VERSION_CONFLICT (409) rather than
+
+        partially applied.'
+      operationId: updatePost
+      tags:
+      - Posts
+      parameters:
+      - name: postGroupId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: x-publora-user-id
+        in: header
+        required: false
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        required: false
+        description: "Opt-in idempotency. Omit the header for the previous behaviour —\nevery call applies the update again.\n\nSend a unique value (a UUID is a good choice) per logical operation\nto make retries safe:\n\n- Same key + identical body, original request finished → the original\n  status code and response body are replayed. The update is not\n  re-applied.\n- Same key + identical body, original request still in flight → `409`\n  (`IDEMPOTENCY_IN_FLIGHT`). Retry shortly.\n- Same key + different body → `422` (`IDEMPOTENCY_KEY_CONFLICT`).\n  Nothing is changed.\n\nThe key is bound to this `postGroupId` as well as the body, so the\nsame key reused against a different post counts as a different\nrequest. Keys are scoped to the acting user (the managed user when\n`x-publora-user-id` is set), so they never collide across accounts.\nRecords expire 24 hours after they are created; reusing a key after\nthat window is treated as a brand-new request.\n"
+        schema:
+          type: string
+        example: 6f1e2d3c-4b5a-4c7d-8e9f-0a1b2c3d4e5f
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: At least one of status, scheduledTime, content, platforms, platformSettings, or mediaUrls must be provided
+              properties:
+                content:
+                  type: string
+                  description: 'Replacement base post text. Every platform post without an explicit
+
+                    per-account override is rewritten to this text; overrides created in
+
+                    the web editor are preserved. Editing the text of a Twitter or Threads
+
+                    target clears its derived thread split so it is recomputed.
+
+
+                    An empty string is accepted while the post stays a draft. Scheduling
+
+                    still enforces each platform''s content and media rules.
+
+                    '
+                platforms:
+                  type: array
+                  items:
+                    type: string
+                  description: 'Replacement target set. The array REPLACES the stored one — it is not
+
+                    merged, so send the complete final list. Use the exact connection IDs
+
+                    returned by GET /platform-connections; duplicates are rejected with
+
+                    INVALID_PLATFORMS and unknown/foreign IDs with INVALID_PLATFORM_CONNECTION.
+
+
+                    IDs removed from the array have their platform posts deleted. An empty
+
+                    array is accepted only while the post remains a draft; scheduling an
+
+                    empty set returns PLATFORMS_REQUIRED.
+
+                    '
+                  example:
+                  - linkedin-ABC123
+                  - twitter-XYZ789
+                status:
+                  type: string
+                  enum:
+                  - draft
+                  - scheduled
+                  description: New status
+                scheduledTime:
+                  type: string
+                  format: date-time
+                  description: 'New ISO 8601 UTC scheduled time. Send a future time.
+
+
+                    If the time is in the past, it is clamped to the current server
+
+                    time and a `SCHEDULED_TIME_COERCED` warning is returned — the
+
+                    update still succeeds. Read the `scheduledTime` in the response
+
+                    for the time actually stored.
+
+
+                    Times less than 5 minutes in the past are always tolerated this
+
+                    way. Strict rejection for a time 5 or more minutes in the past
+
+                    is scheduled to begin on **2026-08-25**, unless production
+
+                    configuration overrides that date. Before strict mode it is
+
+                    clamped with a warning.
+
+
+                    The same check applies to the post''s existing scheduledTime when
+
+                    you move a post to `status: "scheduled"` without sending a new
+
+                    time — a long-stale draft can therefore be rejected.
+
+                    '
+                platformSettings:
+                  $ref: '#/components/schemas/PlatformSettingsInput'
+                mediaUrls:
+                  type: array
+                  minItems: 1
+                  maxItems: 10
+                  items:
+                    type: string
+                    format: uri
+                  description: 'Public https URLs downloaded server-side and appended to existing media. Images: 25 MB each; videos: 150 MB each; aggregate: 300 MB. Ingestion is all-or-nothing.'
+      responses:
+        '200':
+          description: Post updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                    example: Post updated successfully
+                  scheduledTime:
+                    type:
+                    - string
+                    - 'null'
+                    format: date-time
+                    description: 'The effective scheduled time that was actually stored. Always
+
+                      present. `null` when the post has no scheduled time (e.g. it
+
+                      was moved back to draft). This may differ from the value you
+
+                      sent — if so, a `SCHEDULED_TIME_COERCED` warning explains
+
+                      why. Trust this field over your requested value.
+
+                      '
+                    example: '2026-03-01T14:00:00.000Z'
+                  mediaValidationStatus:
+                    type: string
+                    enum:
+                    - pending
+                    description: 'Only present when the post was scheduled while media
+
+                      validation was still unfinished. The media is re-checked
+
+                      before publishing. Accompanied by a
+
+                      `MEDIA_VALIDATION_PENDING` entry in `warnings`.
+
+                      '
+                    example: pending
+                  warnings:
+                    type: array
+                    description: 'Non-fatal notices about a request that still succeeded. Only
+
+                      present when at least one warning applies.
+
+                      '
+                    items:
+                      $ref: '#/components/schemas/Warning'
+                  postGroup:
+                    type: object
+                    properties:
+                      _id:
+                        type: string
+                      status:
+                        type: string
+                      content:
+                        type: string
+                        description: 'The effective base text stored after the update. Always
+
+                          present; an empty string when the post has no base text.
+
+                          '
+                        example: Corrected launch announcement.
+                      platforms:
+                        type: array
+                        items:
+                          type: string
+                        description: 'The effective target set stored after the update. Always
+
+                          present; an empty array for a draft with no targets.
+
+                          '
+                        example:
+                        - linkedin-ABC123
+                        - twitter-XYZ789
+                      scheduledTime:
+                        type: string
+                        format: date-time
+                        description: 'Only included if the post has a scheduled time. Duplicates
+
+                          the top-level `scheduledTime`, which is always present and
+
+                          is the preferred field to read.
+
+                          '
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                missingFields:
+                  value:
+                    error: At least one of status, scheduledTime, content, platforms, platformSettings, or mediaUrls must be provided
+                invalidContent:
+                  summary: content sent as a non-string
+                  value:
+                    error: Content must be a string
+                    code: INVALID_CONTENT
+                    field: content
+                invalidPlatforms:
+                  summary: platforms failed shape validation
+                  value:
+                    error: Platforms must not contain duplicates
+                    code: INVALID_PLATFORMS
+                    field: platforms
+                invalidPlatformConnection:
+                  summary: An added platform is not a connection owned by the caller
+                  value:
+                    error: 'Invalid platform connection(s): linkedin-NOPE. Check connected accounts or call GET /platform-connections.'
+                    code: INVALID_PLATFORM_CONNECTION
+                    invalidPlatforms:
+                    - linkedin-NOPE
+                platformsRequired:
+                  summary: Scheduling with an empty target set
+                  value:
+                    error: PLATFORMS_REQUIRED
+                    code: PLATFORMS_REQUIRED
+                    message: At least one platform is required to schedule a post. Add a platform or keep the post as a draft.
+                childNotEditable:
+                  summary: A platform post has already reached a terminal state
+                  value:
+                    error: Cannot edit a post with a child in published status.
+                    code: POST_NOT_EDITABLE
+                invalidStatus:
+                  value:
+                    error: Status must be either 'draft' or 'scheduled'
+                invalidTimeFormat:
+                  value:
+                    error: Invalid scheduled time format
+                pastTime:
+                  summary: scheduledTime 5+ minutes in the past (strict mode)
+                  value:
+                    error: Scheduled time is in the past. Server time is 2026-09-01T14:02:11.412Z UTC.
+                    code: SCHEDULED_TIME_IN_PAST
+                    serverTime: '2026-09-01T14:02:11.412Z'
+                unknownPlatformSetting:
+                  summary: Unrecognised platformSettings path — nothing was changed
+                  value:
+                    error: 'Unknown platformSettings path: youtube.thumbnail.typo'
+                    code: PLATFORM_SETTING_UNKNOWN
+                    field: youtube.thumbnail.typo
+                idempotencyBodyTooComplex:
+                  summary: Idempotency-Key sent with an excessively nested body
+                  value:
+                    error: Idempotency-Key request body is too deeply nested
+                    code: IDEMPOTENCY_BODY_TOO_COMPLEX
+                cannotUpdate:
+                  value:
+                    error: 'Cannot update post: post is currently in published status'
+                    code: POST_NOT_EDITABLE
+        '401':
+          description: Invalid API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: 'The update conflicts with concurrent work and nothing was changed.
+
+            Either an earlier request with this `Idempotency-Key` is still in
+
+            flight, or the post is being published, or another write committed
+
+            first. Match on `code`; the `error` text varies. Re-read the post
+
+            with GET /get-post before retrying — do not blind-retry an edit that
+
+            races publishing.
+
+            '
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                inFlight:
+                  value:
+                    error: A request with this idempotency key is still in flight
+                    code: IDEMPOTENCY_IN_FLIGHT
+                superseded:
+                  value:
+                    error: Idempotency claim was superseded by another request
+                    code: IDEMPOTENCY_IN_FLIGHT
+                publishInProgress:
+                  summary: The group or one of its platform posts is publishing
+                  value:
+                    error: Post publishing has already started; the post can no longer be edited.
+                    code: POST_PUBLISH_IN_PROGRESS
+                versionConflict:
+                  summary: Another edit committed first — this request changed nothing
+                  value:
+                    error: Post group state changed concurrently; please retry.
+                    code: POST_GROUP_VERSION_CONFLICT
+        '422':
+          description: 'This `Idempotency-Key` was already used with a different request body
+
+            (or against a different postGroupId). Nothing was changed — either
+
+            replay the original body, or retry with a new key.
+
+            '
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: Idempotency key was already used with a different request body
+                code: IDEMPOTENCY_KEY_CONFLICT
+        '404':
+          description: Post not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: Post group not found
+        '429':
+          description: Media URL ingestion rate limit reached (60 URLs per fixed one-hour window)
+          headers:
+            Retry-After:
+              description: Seconds to wait before retrying
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MediaUrlRateLimitError'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: Failed to update post
+  /delete-post/{postGroupId}:
+    parameters:
+    - $ref: '#/components/parameters/XPubloraClient'
+    delete:
+      summary: Delete a scheduled post
+      description: 'Delete a post group and all associated data. This operation removes:
+
+        - The post group record
+
+        - All platform-specific posts (Twitter, LinkedIn, Instagram, etc.)
+
+        - All media file records from the database
+
+        - All media files from S3 storage
+
+
+        The database deletion is atomic (uses MongoDB transaction). S3 deletion
+
+        failures are logged but do not fail the request.'
+      operationId: deletePost
+      tags:
+      - Posts
+      parameters:
+      - name: postGroupId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: x-publora-user-id
+        in: header
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Post deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+        '404':
+          description: Post group not found (ID doesn't exist or belongs to another user)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: Post group not found
+        '500':
+          description: Server error during deletion (transaction rolled back)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: Failed to delete post group
+  /list-posts:
+    parameters:
+    - $ref: '#/components/parameters/XPubloraClient'
+    get:
+      summary: List posts with pagination and filters
+      description: 'Retrieve a paginated list of all your scheduled, draft, published, and failed posts.
+
+
+        **Pagination behavior:** The `page` and `limit` parameters are silently clamped to valid ranges
+
+        rather than returning errors. `page` is clamped to a minimum of 1, and `limit` is clamped to 1-100.
+
+
+        **Platform filtering:** The `platform` filter uses case-insensitive prefix matching.'
+      operationId: listPosts
+      tags:
+      - Posts
+      parameters:
+      - name: x-publora-user-id
+        in: header
+        required: false
+        description: Managed user ID (workspace only)
+        schema:
+          type: string
+      - name: page
+        in: query
+        required: false
+        description: Page number (1-indexed). Values < 1 are silently clamped to 1.
+        schema:
+          type: integer
+          default: 1
+          minimum: 1
+      - name: limit
+        in: query
+        required: false
+        description: Items per page. Values are silently clamped to range 1-100.
+        schema:
+          type: integer
+          default: 20
+          minimum: 1
+          maximum: 100
+      - name: status
+        in: query
+        required: false
+        description: Filter by post status
+        schema:
+          type: string
+          enum:
+          - draft
+          - scheduled
+          - published
+          - failed
+          - partially_published
+      - name: platform
+        in: query
+        required: false
+        description: Filter by platform (case-insensitive prefix matching)
+        schema:
+          type: string
+          enum:
+          - twitter
+          - linkedin
+          - instagram
+          - threads
+          - tiktok
+          - youtube
+          - facebook
+          - bluesky
+          - mastodon
+          - telegram
+          - pinterest
+      - name: sortBy
+        in: query
+        required: false
+        description: Field to sort by
+        schema:
+          type: string
+          enum:
+          - createdAt
+          - updatedAt
+          - scheduledTime
+          default: createdAt
+      - name: sortOrder
+        in: query
+        required: false
+        description: Sort order
+        schema:
+          type: string
+          enum:
+          - asc
+          - desc
+          default: desc
+      - name: fromDate
+        in: query
+        required: false
+        description: Filter posts scheduled after this ISO 8601 date
+        schema:
+          type: string
+          format: date-time
+      - name: toDate
+        in: query
+        required: false
+        description: Filter posts scheduled before this ISO 8601 date
+        schema:
+          type: string
+          format: date-time
+      responses:
+        '200':
+          description: Paginated list of posts
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  posts:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        postGroupId:
+                          type: string
+                          example: 507f1f77bcf86cd799439011
+                        content:
+                          type: string
+                          example: Excited to share our new product launch!
+                        status:
+                          type: string
+                          enum:
+                          - draft
+                          - scheduled
+                          - published
+                          - failed
+                          - partially_published
+                        scheduledTime:
+                          type: string
+                          format: date-time
+                        createdAt:
+                          type: string
+                          format: date-time
+                        updatedAt:
+                          type: string
+                          format: date-time
+                        platforms:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              platformId:
+                                type: string
+                              platform:
+                                type: string
+                              status:
+                                type: string
+                        mediaUrls:
+                          type: array
+                          items:
+                            type: string
+                            format: uri
+                  pagination:
+                    type: object
+                    properties:
+                      page:
+                        type: integer
+                        example: 1
+                      limit:
+                        type: integer
+                        example: 20
+                      totalItems:
+                        type: integer
+                        example: 47
+                      totalPages:
+                        type: integer
+                        example: 3
+                      hasNextPage:
+                        type: boolean
+                        example: true
+                      hasPrevPage:
+                        type: boolean
+                        example: false
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                invalidStatus:
+                  value:
+                    error: 'Invalid status. Must be one of: draft, scheduled, published, failed, partially_published'
+                invalidSortBy:
+                  value:
+                    error: 'Invalid sortBy. Must be one of: createdAt, updatedAt, scheduledTime'
+                invalidFromDate:
+                  value:
+                    error: Invalid fromDate format
+                invalidToDate:
+                  value:
+                    error: Invalid toDate format
+        '401':
+          description: Invalid API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+components:
+  schemas:
+    MediaUrlRateLimitError:
+      type: object
+      required:
+      - error
+      - code
+      - retryAfterSec
+      properties:
+        error:
+          type: string
+          example: Media URL ingestion rate limit reached (60 URLs/hour). Retry later or use the presigned get-upload-url flow.
+        code:
+          type: string
+          enum:
+          - MEDIA_URL_RATE_LIMITED
+        retryAfterSec:
+          type: integer
+          description: Seconds until this fixed-window limit may be retried
+          example: 60
+    YouTubeThumbnailReference:
+      type:
+      - object
+      - 'null'
+      additionalProperties: false
+      description: Reference to a Publora-tracked custom thumbnail for platformSettings.youtube.thumbnail. Send an empty url to clear the thumbnail. Set via update-post only (the upload requires a postGroupId).
+      properties:
+        mediaId:
+          type:
+          - string
+          - 'null'
+          description: Publora media id returned by the YouTube thumbnail upload endpoint
+          example: 665f...
+        id:
+          type:
+          - string
+          - 'null'
+          description: REST alias for mediaId
+        url:
+          type:
+          - string
+          - 'null'
+          description: Publora-hosted thumbnail URL returned by the upload endpoint
+          example: https://media.publora.com/...
+        path:
+          type:
+          - string
+          - 'null'
+          description: REST alias for url
+    PlatformSettingsInput:
+      type: object
+      additionalProperties: false
+      description: Per-platform settings for tiktok, instagram, youtube, threads, twitter, telegram, and linkedin. Unknown platform or nested paths are rejected with 400 PLATFORM_SETTING_UNKNOWN. Merged with defaults on create-post and with existing settings on update-post (omitted fields are preserved).
+      properties:
+        instagram:
+          type: object
+          additionalProperties: false
+          properties:
+            videoType:
+              type: string
+              enum:
+              - REELS
+              - STORIES
+              default: REELS
+              description: How videos are published
+            coverUrl:
+              type: string
+              description: 'Custom Reels cover image (alias: cover_url). Publicly accessible http(s) URL to a JPEG — Instagram fetches it server-side at publish time. Empty string clears the custom cover. Invalid URLs are rejected with 400. Ignored for Stories and image posts.'
+              example: https://cdn.example.com/covers/reel-cover.jpg
+            cover_url:
+              type: string
+              description: REST alias for coverUrl; normalized to coverUrl before storage
+              example: https://cdn.example.com/covers/reel-cover.jpg
+            shareToFeed:
+              type: boolean
+              description: For Reels, false prevents sharing the Reel to the main feed
+        tiktok:
+          type: object
+          additionalProperties: false
+          properties:
+            viewerSetting:
+              type: string
+              enum:
+              - PUBLIC_TO_EVERYONE
+              - MUTUAL_FOLLOW_FRIENDS
+              - FOLLOWER_OF_CREATOR
+              - SELF_ONLY
+              default: PUBLIC_TO_EVERYONE
+            allowComments:
+              type: boolean
+              default: true
+            allowDuet:
+              type: boolean
+              default: false
+            allowStitch:
+              type: boolean
+              default: false
+            commercialContent:
+              type: boolean
+              default: false
+            brandOrganic:
+              type: boolean
+              default: false
+            brandedContent:
+              type: boolean
+              default: false
+        youtube:
+          type: object
+          additionalProperties: false
+          properties:
+            privacy:
+              type: string
+              enum:
+              - private
+              - public
+              - unlisted
+              default: public
+            title:
+              type: string
+              default: ''
+            madeForKids:
+              type: boolean
+              default: false
+            tags:
+              description: Video tags. REST accepts an array or a comma-separated string and caps the normalized combined tag budget at 500 characters.
+              oneOf:
+              - type: array
+                items:
+                  type: string
+              - type: string
+            categoryId:
+              type: string
+              description: Optional YouTube snippet.categoryId
+            playlist:
+              $ref: '#/components/schemas/YouTubePlaylistReference'
+            thumbnail:
+              $ref: '#/components/schemas/YouTubeThumbnailReference'
+        threads:
+          type: object
+          additionalProperties: false
+          properties:
+            replyControl:
+              type: string
+              enum:
+              - everyone
+              - accounts_you_follow
+              - mentioned_only
+              - ''
+              default: ''
+        twitter:
+          type: object
+          additionalProperties: false
+          description: X reply and quote targets. On self-serve X API tiers, the target author must have mentioned the connected account in that post, quoted one of its posts, or the connected account must have authored the target. Publora cannot prevalidate this relationship; X can reject publication later with X_REPLY_NOT_AUTHORIZED.
+          properties:
+            replyTo:
+              type: string
+              default: ''
+              description: Full x.com/twitter.com status URL or bare 1-19 digit post ID. Publishes the post (or thread head) as a reply. Empty string clears.
+              example: https://x.com/customer/status/1234567890123456789
+            quoteTweet:
+              type: string
+              default: ''
+              description: Full x.com/twitter.com status URL or bare 1-19 digit post ID. Quotes from the post or thread head; may be combined with replyTo and media. Empty string clears.
+              example: '987654321098765432'
+        telegram:
+          type: object
+          additionalProperties: false
+          properties:
+            disableNotification:
+              type: boolean
+              default: false
+            disableWebPagePreview:
+              type: boolean
+              default: false
+            protectContent:
+              type: boolean
+              default: false
+        linkedin:
+          type: object
+          additionalProperties: false
+          description: LinkedIn repost (reshare) settings. When a repost is enabled, the group's content becomes the reshare commentary (3,000-char limit) and media is forbidden — scheduling a repost group with media fails validation with code MEDIA_TYPE_NOT_SUPPORTED.
+          properties:
+            repostEnabled:
+              type: boolean
+              default: false
+            repostParentUrn:
+              type: string
+              default: ''
+              description: Canonical urn:li:share:* or urn:li:ugcPost:* parent. Required when repostEnabled is true; an empty value means a normal post.
+            repostVisibility:
+              type: string
+              enum:
+              - PUBLIC
+              - CONNECTIONS
+              - ''
+              default: ''
+              description: Repost visibility. CONNECTIONS is personal-profile-only; company-page reposts must use PUBLIC.
+    Warning:
+      type: object
+      description: 'A non-fatal notice about a request that still succeeded. The `warnings`
+
+        array is only present when at least one warning applies — the key is
+
+        omitted, not empty, otherwise.
+
+
+        Treat `code` as the contract: `message` is human-readable and may change
+
+        at any time. Which fields accompany `code` depends on the code itself.
+
+        '
+      properties:
+        code:
+          type: string
+          enum:
+          - SCHEDULED_TIME_COERCED
+          - MEDIA_VALIDATION_PENDING
+          description: "- `SCHEDULED_TIME_COERCED` — the requested `scheduledTime` was in the\n  past and was clamped to server time. Carries `requested` and\n  `effective`.\n- `MEDIA_VALIDATION_PENDING` — /update-post only. Media validation had\n  not finished, but the post was scheduled anyway; the media is\n  re-checked before publishing. Carries `mediaFileId`, `mediaStatus`,\n  `pendingCode`, and `attempts`. Accompanied by\n  `mediaValidationStatus: \"pending\"` on the response.\n"
+          example: SCHEDULED_TIME_COERCED
+        message:
+          type: string
+          description: Human-readable explanation. Do not match on this string — match on code.
+          example: Requested scheduled time 2026-03-01T14:00:00.000Z was in the past and was changed to server time 2026-03-01T14:02:11.412Z.
+        requested:
+          type: string
+          format: date-time
+          description: SCHEDULED_TIME_COERCED only. The scheduledTime you sent.
+          example: '2026-03-01T14:00:00.000Z'
+        effective:
+          type: string
+          format: date-time
+          description: SCHEDULED_TIME_COERCED only. The scheduledTime actually stored.
+          example: '2026-03-01T14:02:11.412Z'
+        mediaFileId:
+          type:
+          - string
+          - 'null'
+          description: MEDIA_VALIDATION_PENDING only. The media file still being validated.
+          example: 507f1f77bcf86cd799439012
+        mediaStatus:
+          type:
+          - string
+          - 'null'
+          description: MEDIA_VALIDATION_PENDING only. Status of that media file when the response was sent.
+          example: uploading
+        pendingCode:
+          type:
+          - string
+          - 'null'
+          description: MEDIA_VALIDATION_PENDING only. The last transient probe result.
+          example: MEDIA_VALIDATION_PENDING
+        attempts:
+          type: integer
+          description: MEDIA_VALIDATION_PENDING only. How many validation probes ran before responding.
+          example: 3
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Human-readable message. Do not match on this string — match on code where present.
+          example: Invalid API key
+        code:
+          type: string
+          description: 'Stable machine-readable error code. Present on the newer error paths
+
+            (scheduling, platformSettings validation, idempotency); older errors
+
+            return `error` only. Always prefer this over the `error` text.
+
+            '
+          example: SCHEDULED_TIME_IN_PAST
+        field:
+          type: string
+          description: '`PLATFORM_SETTING_UNKNOWN` only. The exact dotted path of the rejected
+
+            key, relative to the `platformSettings` object (no `platformSettings.`
+
+            prefix).
+
+            '
+          example: youtube.thumbnail.typo
+        serverTime:
+          type: string
+          format: date-time
+          description: '`SCHEDULED_TIME_IN_PAST` only. Current server time (UTC) when the
+
+            request was rejected — compare against your clock to diagnose skew.
+
+            '
+          example: '2026-03-01T14:02:11.412Z'
+    Post:
+      type: object
+      properties:
+        platform:
+          type: string
+          enum:
+          - twitter
+          - linkedin
+          - instagram
+          - threads
+          - tiktok
+          - youtube
+          - facebook
+          - bluesky
+          - mastodon
+          - telegram
+          - pinterest
+          example: twitter
+        platformId:
+          type:
+          - string
+          - 'null'
+          description: Platform connection ID. Always present; null if the post has no connection resolved.
+          example: '123456789'
+        content:
+          type: string
+          example: Hello from Publora API!
+        status:
+          type: string
+          enum:
+          - draft
+          - scheduled
+          - pending
+          - processing
+          - published
+          - failed
+          example: published
+        postedId:
+          type:
+          - string
+          - 'null'
+          description: Platform-specific post ID. Always present; null until the post is published.
+          example: '1234567890123456789'
+        permalink:
+          type:
+          - string
+          - 'null'
+          description: 'Public URL of the published post. Always present; null until the post
+
+            is published, and null for platforms that expose no permalink.
+
+            '
+          example: https://x.com/publora/status/1234567890123456789
+    YouTubePlaylistReference:
+      type:
+      - object
+      - 'null'
+      additionalProperties: false
+      default:
+        id: ''
+        platformId: ''
+      description: Reference to a YouTube playlist for platformSettings.youtube.playlist. Send empty strings for both fields to clear the playlist.
+      properties:
+        id:
+          type:
+          - string
+          - 'null'
+          default: ''
+          description: YouTube playlist id
+          example: PLxxxxxxxx
+        platformId:
+          type:
+          - string
+          - 'null'
+          default: ''
+          description: Compound YouTube platform id from platforms; must match the single selected YouTube channel
+          example: youtube-UCxxxxxxxx
+  parameters:
+    XPubloraClient:
+      name: x-publora-client
+      in: header
+      required: false
+      description: Optional client identifier accepted by every API-key-authenticated operation. Any non-empty value is preserved; `api` is used when absent. Setting `mcp` triggers the MCP access entitlement check.
+      schema:
+        type: string
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: x-publora-key
+      description: 'API key from Settings > API Keys. Format: sk_timestamp.hexstring'

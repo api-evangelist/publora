@@ -1,0 +1,398 @@
+openapi: 3.2.0
+info:
+  title: Publora Webhooks API
+  description: 'Affordable REST API for scheduling and publishing social media posts
+
+    across X/Twitter, LinkedIn, Instagram, Threads, TikTok, YouTube,
+
+    Facebook, Bluesky, Mastodon, and Telegram.
+
+
+    All plans include full API access. Starting at $5.40/month (yearly) or $9/month.
+
+    14-day free trial, no credit card needed.
+
+
+    ## Workspace API
+
+    The Workspace API allows you to manage multiple users under a single account.
+
+    **To enable Workspace access, please contact Publora support at serge@publora.com.**'
+  version: 1.0.0
+  contact:
+    email: serge@publora.com
+    url: https://publora.com
+servers:
+- url: https://api.publora.com/api/v1
+  description: Production
+security:
+- ApiKeyAuth: []
+tags:
+- name: Webhooks
+  description: Manage webhook endpoints for real-time notifications
+paths:
+  /webhooks:
+    parameters:
+    - $ref: '#/components/parameters/XPubloraClient'
+    get:
+      summary: List all webhooks
+      description: Retrieve all webhooks configured for your account.
+      operationId: listWebhooks
+      tags:
+      - Webhooks
+      responses:
+        '200':
+          description: List of webhooks
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  webhooks:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Webhook'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      summary: Create a webhook
+      description: 'Create a new webhook endpoint. Maximum 10 webhooks per user.
+
+        The webhook secret is only returned on creation - save it securely.'
+      operationId: createWebhook
+      tags:
+      - Webhooks
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - name
+              - url
+              - events
+              properties:
+                name:
+                  type: string
+                  description: Friendly name for the webhook
+                  example: Production webhook
+                url:
+                  type: string
+                  format: uri
+                  description: HTTPS URL to receive webhook events
+                  example: https://example.com/webhooks/publora
+                events:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                    - post.scheduled
+                    - post.published
+                    - post.failed
+                    - post.demoted
+                    - token.expiring
+                  description: Events to subscribe to. token.expiring is defined but not currently dispatched; post.demoted fires when an attach/detach returns a scheduled group to draft.
+                  example:
+                  - post.published
+                  - post.failed
+      responses:
+        '201':
+          description: Webhook created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  webhook:
+                    type: object
+                    properties:
+                      _id:
+                        type: string
+                      name:
+                        type: string
+                      url:
+                        type: string
+                      events:
+                        type: array
+                        items:
+                          type: string
+                      secret:
+                        type: string
+                        description: Webhook secret for signature verification (only returned on create)
+                      isActive:
+                        type: boolean
+                      createdAt:
+                        type: string
+                        format: date-time
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                missingFields:
+                  value:
+                    error: Name, URL, and at least one event are required
+                invalidUrl:
+                  value:
+                    error: URL must use HTTPS
+                invalidEvents:
+                  value:
+                    error: Invalid events
+                limitReached:
+                  value:
+                    error: Maximum of 10 webhooks per user
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /webhooks/{id}:
+    parameters:
+    - $ref: '#/components/parameters/XPubloraClient'
+    patch:
+      summary: Update a webhook
+      description: Update an existing webhook's name, URL, events, or active status.
+      operationId: updateWebhook
+      tags:
+      - Webhooks
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                url:
+                  type: string
+                  format: uri
+                events:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                    - post.scheduled
+                    - post.published
+                    - post.failed
+                    - post.demoted
+                    - token.expiring
+                    description: token.expiring is defined and subscribable but is not currently dispatched
+                isActive:
+                  type: boolean
+      responses:
+        '200':
+          description: Webhook updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  webhook:
+                    $ref: '#/components/schemas/Webhook'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Webhook not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      summary: Delete a webhook
+      description: Delete a webhook endpoint.
+      operationId: deleteWebhook
+      tags:
+      - Webhooks
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Webhook deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+        '404':
+          description: Webhook not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /webhooks/{id}/regenerate-secret:
+    parameters:
+    - $ref: '#/components/parameters/XPubloraClient'
+    post:
+      summary: Regenerate webhook secret
+      description: 'Generate a new secret for a webhook. The old secret will be invalidated.
+
+        Make sure to update your webhook handler with the new secret.'
+      operationId: regenerateWebhookSecret
+      tags:
+      - Webhooks
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Secret regenerated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  secret:
+                    type: string
+                    description: New webhook secret
+        '404':
+          description: Webhook not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+components:
+  schemas:
+    Webhook:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: 507f1f77bcf86cd799439011
+        name:
+          type: string
+          example: My Webhook
+        url:
+          type: string
+          format: uri
+          example: https://example.com/webhook
+        events:
+          type: array
+          items:
+            type: string
+            enum:
+            - post.scheduled
+            - post.published
+            - post.failed
+            - post.demoted
+            - token.expiring
+            description: token.expiring is defined and subscribable but is not currently dispatched; do not depend on it
+          example:
+          - post.published
+          - post.failed
+        isActive:
+          type: boolean
+          example: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Human-readable message. Do not match on this string — match on code where present.
+          example: Invalid API key
+        code:
+          type: string
+          description: 'Stable machine-readable error code. Present on the newer error paths
+
+            (scheduling, platformSettings validation, idempotency); older errors
+
+            return `error` only. Always prefer this over the `error` text.
+
+            '
+          example: SCHEDULED_TIME_IN_PAST
+        field:
+          type: string
+          description: '`PLATFORM_SETTING_UNKNOWN` only. The exact dotted path of the rejected
+
+            key, relative to the `platformSettings` object (no `platformSettings.`
+
+            prefix).
+
+            '
+          example: youtube.thumbnail.typo
+        serverTime:
+          type: string
+          format: date-time
+          description: '`SCHEDULED_TIME_IN_PAST` only. Current server time (UTC) when the
+
+            request was rejected — compare against your clock to diagnose skew.
+
+            '
+          example: '2026-03-01T14:02:11.412Z'
+  parameters:
+    XPubloraClient:
+      name: x-publora-client
+      in: header
+      required: false
+      description: Optional client identifier accepted by every API-key-authenticated operation. Any non-empty value is preserved; `api` is used when absent. Setting `mcp` triggers the MCP access entitlement check.
+      schema:
+        type: string
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: x-publora-key
+      description: 'API key from Settings > API Keys. Format: sk_timestamp.hexstring'
