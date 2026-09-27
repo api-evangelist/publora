@@ -310,42 +310,6 @@ paths:
                 $ref: '#/components/schemas/Error'
 components:
   schemas:
-    Webhook:
-      type: object
-      properties:
-        _id:
-          type: string
-          example: 507f1f77bcf86cd799439011
-        name:
-          type: string
-          example: My Webhook
-        url:
-          type: string
-          format: uri
-          example: https://example.com/webhook
-        events:
-          type: array
-          items:
-            type: string
-            enum:
-            - post.scheduled
-            - post.published
-            - post.failed
-            - post.demoted
-            - token.expiring
-            description: token.expiring is defined and subscribable but is not currently dispatched; do not depend on it
-          example:
-          - post.published
-          - post.failed
-        isActive:
-          type: boolean
-          example: true
-        createdAt:
-          type: string
-          format: date-time
-        updatedAt:
-          type: string
-          format: date-time
     Error:
       type: object
       properties:
@@ -382,6 +346,42 @@ components:
 
             '
           example: '2026-03-01T14:02:11.412Z'
+    Webhook:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: 507f1f77bcf86cd799439011
+        name:
+          type: string
+          example: My Webhook
+        url:
+          type: string
+          format: uri
+          example: https://example.com/webhook
+        events:
+          type: array
+          items:
+            type: string
+            enum:
+            - post.scheduled
+            - post.published
+            - post.failed
+            - post.demoted
+            - token.expiring
+            description: token.expiring is defined and subscribable but is not currently dispatched; do not depend on it
+          example:
+          - post.published
+          - post.failed
+        isActive:
+          type: boolean
+          example: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
   parameters:
     XPubloraClient:
       name: x-publora-client

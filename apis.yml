@@ -14,7 +14,7 @@ modified: '2026-09-11'
 specificationVersion: '0.21'
 image: https://publora.com/publora-preview.png
 tags:
-- Social-Media
+- Social Media
 - Publishing
 - Scheduling
 - MCP
@@ -31,6 +31,7 @@ tags_raw:
 - Social Media Management
 - Webhooks
 - AI Agents
+- Social-Media
 apis:
 - aid: publora:publora-connections-api
   name: Publora Connections API

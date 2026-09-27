@@ -159,15 +159,18 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 components:
-  parameters:
-    XPubloraClient:
-      name: x-publora-client
-      in: header
-      required: false
-      description: Optional client identifier accepted by every API-key-authenticated operation. Any non-empty value is preserved; `api` is used when absent. Setting `mcp` triggers the MCP access entitlement check.
-      schema:
-        type: string
   schemas:
+    ConnectionLastError:
+      type:
+      - object
+      - 'null'
+      description: Last connection error, or null
+      properties:
+        message:
+          type: string
+        occurredAt:
+          type: string
+          format: date-time
     Error:
       type: object
       properties:
@@ -204,17 +207,6 @@ components:
 
             '
           example: '2026-03-01T14:02:11.412Z'
-    ConnectionLastError:
-      type:
-      - object
-      - 'null'
-      description: Last connection error, or null
-      properties:
-        message:
-          type: string
-        occurredAt:
-          type: string
-          format: date-time
     PlatformConnection:
       type: object
       properties:
@@ -269,6 +261,14 @@ components:
           description: Timestamp of last successful post
         lastError:
           $ref: '#/components/schemas/ConnectionLastError'
+  parameters:
+    XPubloraClient:
+      name: x-publora-client
+      in: header
+      required: false
+      description: Optional client identifier accepted by every API-key-authenticated operation. Any non-empty value is preserved; `api` is used when absent. Setting `mcp` triggers the MCP access entitlement check.
+      schema:
+        type: string
   securitySchemes:
     ApiKeyAuth:
       type: apiKey

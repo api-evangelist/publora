@@ -1137,6 +1137,100 @@ paths:
                 $ref: '#/components/schemas/Error'
 components:
   schemas:
+    Warning:
+      type: object
+      description: 'A non-fatal notice about a request that still succeeded. The `warnings`
+
+        array is only present when at least one warning applies — the key is
+
+        omitted, not empty, otherwise.
+
+
+        Treat `code` as the contract: `message` is human-readable and may change
+
+        at any time. Which fields accompany `code` depends on the code itself.
+
+        '
+      properties:
+        code:
+          type: string
+          enum:
+          - SCHEDULED_TIME_COERCED
+          - MEDIA_VALIDATION_PENDING
+          description: "- `SCHEDULED_TIME_COERCED` — the requested `scheduledTime` was in the\n  past and was clamped to server time. Carries `requested` and\n  `effective`.\n- `MEDIA_VALIDATION_PENDING` — /update-post only. Media validation had\n  not finished, but the post was scheduled anyway; the media is\n  re-checked before publishing. Carries `mediaFileId`, `mediaStatus`,\n  `pendingCode`, and `attempts`. Accompanied by\n  `mediaValidationStatus: \"pending\"` on the response.\n"
+          example: SCHEDULED_TIME_COERCED
+        message:
+          type: string
+          description: Human-readable explanation. Do not match on this string — match on code.
+          example: Requested scheduled time 2026-03-01T14:00:00.000Z was in the past and was changed to server time 2026-03-01T14:02:11.412Z.
+        requested:
+          type: string
+          format: date-time
+          description: SCHEDULED_TIME_COERCED only. The scheduledTime you sent.
+          example: '2026-03-01T14:00:00.000Z'
+        effective:
+          type: string
+          format: date-time
+          description: SCHEDULED_TIME_COERCED only. The scheduledTime actually stored.
+          example: '2026-03-01T14:02:11.412Z'
+        mediaFileId:
+          type:
+          - string
+          - 'null'
+          description: MEDIA_VALIDATION_PENDING only. The media file still being validated.
+          example: 507f1f77bcf86cd799439012
+        mediaStatus:
+          type:
+          - string
+          - 'null'
+          description: MEDIA_VALIDATION_PENDING only. Status of that media file when the response was sent.
+          example: uploading
+        pendingCode:
+          type:
+          - string
+          - 'null'
+          description: MEDIA_VALIDATION_PENDING only. The last transient probe result.
+          example: MEDIA_VALIDATION_PENDING
+        attempts:
+          type: integer
+          description: MEDIA_VALIDATION_PENDING only. How many validation probes ran before responding.
+          example: 3
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Human-readable message. Do not match on this string — match on code where present.
+          example: Invalid API key
+        code:
+          type: string
+          description: 'Stable machine-readable error code. Present on the newer error paths
+
+            (scheduling, platformSettings validation, idempotency); older errors
+
+            return `error` only. Always prefer this over the `error` text.
+
+            '
+          example: SCHEDULED_TIME_IN_PAST
+        field:
+          type: string
+          description: '`PLATFORM_SETTING_UNKNOWN` only. The exact dotted path of the rejected
+
+            key, relative to the `platformSettings` object (no `platformSettings.`
+
+            prefix).
+
+            '
+          example: youtube.thumbnail.typo
+        serverTime:
+          type: string
+          format: date-time
+          description: '`SCHEDULED_TIME_IN_PAST` only. Current server time (UTC) when the
+
+            request was rejected — compare against your clock to diagnose skew.
+
+            '
+          example: '2026-03-01T14:02:11.412Z'
     MediaUrlRateLimitError:
       type: object
       required:
@@ -1155,6 +1249,59 @@ components:
           type: integer
           description: Seconds until this fixed-window limit may be retried
           example: 60
+    Post:
+      type: object
+      properties:
+        platform:
+          type: string
+          enum:
+          - twitter
+          - linkedin
+          - instagram
+          - threads
+          - tiktok
+          - youtube
+          - facebook
+          - bluesky
+          - mastodon
+          - telegram
+          - pinterest
+          example: twitter
+        platformId:
+          type:
+          - string
+          - 'null'
+          description: Platform connection ID. Always present; null if the post has no connection resolved.
+          example: '123456789'
+        content:
+          type: string
+          example: Hello from Publora API!
+        status:
+          type: string
+          enum:
+          - draft
+          - scheduled
+          - pending
+          - processing
+          - published
+          - failed
+          example: published
+        postedId:
+          type:
+          - string
+          - 'null'
+          description: Platform-specific post ID. Always present; null until the post is published.
+          example: '1234567890123456789'
+        permalink:
+          type:
+          - string
+          - 'null'
+          description: 'Public URL of the published post. Always present; null until the post
+
+            is published, and null for platforms that expose no permalink.
+
+            '
+          example: https://x.com/publora/status/1234567890123456789
     YouTubeThumbnailReference:
       type:
       - object
@@ -1332,153 +1479,6 @@ components:
               - ''
               default: ''
               description: Repost visibility. CONNECTIONS is personal-profile-only; company-page reposts must use PUBLIC.
-    Warning:
-      type: object
-      description: 'A non-fatal notice about a request that still succeeded. The `warnings`
-
-        array is only present when at least one warning applies — the key is
-
-        omitted, not empty, otherwise.
-
-
-        Treat `code` as the contract: `message` is human-readable and may change
-
-        at any time. Which fields accompany `code` depends on the code itself.
-
-        '
-      properties:
-        code:
-          type: string
-          enum:
-          - SCHEDULED_TIME_COERCED
-          - MEDIA_VALIDATION_PENDING
-          description: "- `SCHEDULED_TIME_COERCED` — the requested `scheduledTime` was in the\n  past and was clamped to server time. Carries `requested` and\n  `effective`.\n- `MEDIA_VALIDATION_PENDING` — /update-post only. Media validation had\n  not finished, but the post was scheduled anyway; the media is\n  re-checked before publishing. Carries `mediaFileId`, `mediaStatus`,\n  `pendingCode`, and `attempts`. Accompanied by\n  `mediaValidationStatus: \"pending\"` on the response.\n"
-          example: SCHEDULED_TIME_COERCED
-        message:
-          type: string
-          description: Human-readable explanation. Do not match on this string — match on code.
-          example: Requested scheduled time 2026-03-01T14:00:00.000Z was in the past and was changed to server time 2026-03-01T14:02:11.412Z.
-        requested:
-          type: string
-          format: date-time
-          description: SCHEDULED_TIME_COERCED only. The scheduledTime you sent.
-          example: '2026-03-01T14:00:00.000Z'
-        effective:
-          type: string
-          format: date-time
-          description: SCHEDULED_TIME_COERCED only. The scheduledTime actually stored.
-          example: '2026-03-01T14:02:11.412Z'
-        mediaFileId:
-          type:
-          - string
-          - 'null'
-          description: MEDIA_VALIDATION_PENDING only. The media file still being validated.
-          example: 507f1f77bcf86cd799439012
-        mediaStatus:
-          type:
-          - string
-          - 'null'
-          description: MEDIA_VALIDATION_PENDING only. Status of that media file when the response was sent.
-          example: uploading
-        pendingCode:
-          type:
-          - string
-          - 'null'
-          description: MEDIA_VALIDATION_PENDING only. The last transient probe result.
-          example: MEDIA_VALIDATION_PENDING
-        attempts:
-          type: integer
-          description: MEDIA_VALIDATION_PENDING only. How many validation probes ran before responding.
-          example: 3
-    Error:
-      type: object
-      properties:
-        error:
-          type: string
-          description: Human-readable message. Do not match on this string — match on code where present.
-          example: Invalid API key
-        code:
-          type: string
-          description: 'Stable machine-readable error code. Present on the newer error paths
-
-            (scheduling, platformSettings validation, idempotency); older errors
-
-            return `error` only. Always prefer this over the `error` text.
-
-            '
-          example: SCHEDULED_TIME_IN_PAST
-        field:
-          type: string
-          description: '`PLATFORM_SETTING_UNKNOWN` only. The exact dotted path of the rejected
-
-            key, relative to the `platformSettings` object (no `platformSettings.`
-
-            prefix).
-
-            '
-          example: youtube.thumbnail.typo
-        serverTime:
-          type: string
-          format: date-time
-          description: '`SCHEDULED_TIME_IN_PAST` only. Current server time (UTC) when the
-
-            request was rejected — compare against your clock to diagnose skew.
-
-            '
-          example: '2026-03-01T14:02:11.412Z'
-    Post:
-      type: object
-      properties:
-        platform:
-          type: string
-          enum:
-          - twitter
-          - linkedin
-          - instagram
-          - threads
-          - tiktok
-          - youtube
-          - facebook
-          - bluesky
-          - mastodon
-          - telegram
-          - pinterest
-          example: twitter
-        platformId:
-          type:
-          - string
-          - 'null'
-          description: Platform connection ID. Always present; null if the post has no connection resolved.
-          example: '123456789'
-        content:
-          type: string
-          example: Hello from Publora API!
-        status:
-          type: string
-          enum:
-          - draft
-          - scheduled
-          - pending
-          - processing
-          - published
-          - failed
-          example: published
-        postedId:
-          type:
-          - string
-          - 'null'
-          description: Platform-specific post ID. Always present; null until the post is published.
-          example: '1234567890123456789'
-        permalink:
-          type:
-          - string
-          - 'null'
-          description: 'Public URL of the published post. Always present; null until the post
-
-            is published, and null for platforms that expose no permalink.
-
-            '
-          example: https://x.com/publora/status/1234567890123456789
     YouTubePlaylistReference:
       type:
       - object

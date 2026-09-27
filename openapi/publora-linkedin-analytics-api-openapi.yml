@@ -1051,26 +1051,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 components:
-  parameters:
-    XPubloraClient:
-      name: x-publora-client
-      in: header
-      required: false
-      description: Optional client identifier accepted by every API-key-authenticated operation. Any non-empty value is preserved; `api` is used when absent. Setting `mcp` triggers the MCP access entitlement check.
-      schema:
-        type: string
   schemas:
-    LinkedInUrnTranslation:
-      type: object
-      description: Present only when LinkedIn translated an activity URN before processing the reaction
-      required:
-      - from
-      - to
-      properties:
-        from:
-          type: string
-        to:
-          type: string
     Error:
       type: object
       properties:
@@ -1107,6 +1088,25 @@ components:
 
             '
           example: '2026-03-01T14:02:11.412Z'
+    LinkedInUrnTranslation:
+      type: object
+      description: Present only when LinkedIn translated an activity URN before processing the reaction
+      required:
+      - from
+      - to
+      properties:
+        from:
+          type: string
+        to:
+          type: string
+  parameters:
+    XPubloraClient:
+      name: x-publora-client
+      in: header
+      required: false
+      description: Optional client identifier accepted by every API-key-authenticated operation. Any non-empty value is preserved; `api` is used when absent. Setting `mcp` triggers the MCP access entitlement check.
+      schema:
+        type: string
   securitySchemes:
     ApiKeyAuth:
       type: apiKey

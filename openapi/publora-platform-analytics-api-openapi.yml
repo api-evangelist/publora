@@ -299,6 +299,74 @@ paths:
                 error: Failed to fetch profile statistics
 components:
   schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Human-readable message. Do not match on this string — match on code where present.
+          example: Invalid API key
+        code:
+          type: string
+          description: 'Stable machine-readable error code. Present on the newer error paths
+
+            (scheduling, platformSettings validation, idempotency); older errors
+
+            return `error` only. Always prefer this over the `error` text.
+
+            '
+          example: SCHEDULED_TIME_IN_PAST
+        field:
+          type: string
+          description: '`PLATFORM_SETTING_UNKNOWN` only. The exact dotted path of the rejected
+
+            key, relative to the `platformSettings` object (no `platformSettings.`
+
+            prefix).
+
+            '
+          example: youtube.thumbnail.typo
+        serverTime:
+          type: string
+          format: date-time
+          description: '`SCHEDULED_TIME_IN_PAST` only. Current server time (UTC) when the
+
+            request was rejected — compare against your clock to diagnose skew.
+
+            '
+          example: '2026-03-01T14:02:11.412Z'
+    PlatformAnalyticsIssue:
+      type: string
+      description: 'Why one connection could not be answered. Reported per connection rather
+
+        than failing the request.
+
+        '
+      enum:
+      - CONNECTION_NOT_FOUND
+      - AUTH_REVOKED
+      - FORBIDDEN
+      - RATE_LIMITED
+      - FETCH_FAILED
+    PlatformProfileMetrics:
+      type: object
+      description: Follower counters for one connected account.
+      properties:
+        followers:
+          type:
+          - integer
+          - 'null'
+          example: 1234
+        following:
+          type:
+          - integer
+          - 'null'
+          example: 321
+        posts:
+          type:
+          - integer
+          - 'null'
+          example: 987
     PlatformPostMetrics:
       type: object
       description: 'Engagement counters for one post. Every key is always present; a metric the
@@ -354,74 +422,6 @@ components:
           - integer
           - 'null'
           description: Always null on both platforms
-    PlatformProfileMetrics:
-      type: object
-      description: Follower counters for one connected account.
-      properties:
-        followers:
-          type:
-          - integer
-          - 'null'
-          example: 1234
-        following:
-          type:
-          - integer
-          - 'null'
-          example: 321
-        posts:
-          type:
-          - integer
-          - 'null'
-          example: 987
-    PlatformAnalyticsIssue:
-      type: string
-      description: 'Why one connection could not be answered. Reported per connection rather
-
-        than failing the request.
-
-        '
-      enum:
-      - CONNECTION_NOT_FOUND
-      - AUTH_REVOKED
-      - FORBIDDEN
-      - RATE_LIMITED
-      - FETCH_FAILED
-    Error:
-      type: object
-      properties:
-        error:
-          type: string
-          description: Human-readable message. Do not match on this string — match on code where present.
-          example: Invalid API key
-        code:
-          type: string
-          description: 'Stable machine-readable error code. Present on the newer error paths
-
-            (scheduling, platformSettings validation, idempotency); older errors
-
-            return `error` only. Always prefer this over the `error` text.
-
-            '
-          example: SCHEDULED_TIME_IN_PAST
-        field:
-          type: string
-          description: '`PLATFORM_SETTING_UNKNOWN` only. The exact dotted path of the rejected
-
-            key, relative to the `platformSettings` object (no `platformSettings.`
-
-            prefix).
-
-            '
-          example: youtube.thumbnail.typo
-        serverTime:
-          type: string
-          format: date-time
-          description: '`SCHEDULED_TIME_IN_PAST` only. Current server time (UTC) when the
-
-            request was rejected — compare against your clock to diagnose skew.
-
-            '
-          example: '2026-03-01T14:02:11.412Z'
   parameters:
     XPubloraClient:
       name: x-publora-client
