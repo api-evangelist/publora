@@ -228,6 +228,9 @@ apis:
   - type: Postman
     url: https://www.postman.com/publora/publora-api/overview
 common:
+- type: CapabilityMap
+  url: capabilities/publora-capability-edges.yml
+  name: Publora Business Capability Map
 - type: MCPServer
   url: https://mcp.publora.com/mcp
 - type: AgenticAccess

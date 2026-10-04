@@ -1,0 +1,46 @@
+slug: publora
+provider: Publora
+generated_by: planning/capability-mapping/scripts/classify_capabilities.py
+model: claude-opus-5
+frame:
+- Software & Technology
+min_confidence: 0.7
+capability_model:
+  source: https://github.com/vincentmakes/turbo-ea-capabilities
+  license: CC-BY-4.0
+  attribution: Turbo EA Capabilities by Vincent Verdet — Turbo EA, https://github.com/vincentmakes/turbo-ea-capabilities,
+    CC BY 4.0
+  notice: NOTICE
+edge_count: 3
+edges:
+- tag: LinkedIn Analytics
+  spec_file: publora-linkedin-analytics-api-openapi.yml
+  capability_id: BC-400.60
+  capability_id_l1: BC-400
+  capability_name: Digital Marketing Management
+  confidence: 0.8
+  evidence: getLinkedInPostStatistics Get LinkedIn post analytics; getLinkedInFollowers Get LinkedIn follower
+    statistics; createLinkedInComment Add a comment to a LinkedIn post
+  reason: Social channel performance measurement plus engagement actions (reactions, comments, reshares)
+    on a social network — squarely digital/social marketing management. Minor ambiguity vs. content marketing
+    measurement.
+- tag: Posts
+  spec_file: publora-posts-api-openapi.yml
+  capability_id: BC-400.60
+  capability_id_l1: BC-400
+  capability_name: Digital Marketing Management
+  confidence: 0.8
+  evidence: POST /create-post createPost Create and schedule a social media post; GET /list-posts listPosts
+    List posts with pagination and filters
+  reason: Core surface for authoring, scheduling and publishing social media posts across channels — social/digital
+    marketing execution. Some overlap with content marketing distribution, hence 0.8 rather than higher.
+- tag: Platform Analytics
+  spec_file: publora-platform-analytics-api-openapi.yml
+  capability_id: BC-400.60
+  capability_id_l1: BC-400
+  capability_name: Digital Marketing Management
+  confidence: 0.7
+  evidence: POST /post-statistics getPlatformPostStatistics Get Mastodon and Bluesky post statistics;
+    PlatformProfileMetrics
+  reason: Returns post and profile metrics for social platforms — social channel performance measurement
+    within digital marketing. Narrow surface (two endpoints, Mastodon/Bluesky only) keeps confidence moderate.
