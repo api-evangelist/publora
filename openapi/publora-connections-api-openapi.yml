@@ -160,6 +160,42 @@ paths:
                 $ref: '#/components/schemas/Error'
 components:
   schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Human-readable message. Do not match on this string — match on code where present.
+          example: Invalid API key
+        code:
+          type: string
+          description: 'Stable machine-readable error code. Present on the newer error paths
+
+            (scheduling, platformSettings validation, idempotency); older errors
+
+            return `error` only. Always prefer this over the `error` text.
+
+            '
+          example: SCHEDULED_TIME_IN_PAST
+        field:
+          type: string
+          description: '`PLATFORM_SETTING_UNKNOWN` only. The exact dotted path of the rejected
+
+            key, relative to the `platformSettings` object (no `platformSettings.`
+
+            prefix).
+
+            '
+          example: youtube.thumbnail.typo
+        serverTime:
+          type: string
+          format: date-time
+          description: '`SCHEDULED_TIME_IN_PAST` only. Current server time (UTC) when the
+
+            request was rejected — compare against your clock to diagnose skew.
+
+            '
+          example: '2026-03-01T14:02:11.412Z'
     ConnectionLastError:
       type:
       - object
@@ -225,42 +261,6 @@ components:
           description: Timestamp of last successful post
         lastError:
           $ref: '#/components/schemas/ConnectionLastError'
-    Error:
-      type: object
-      properties:
-        error:
-          type: string
-          description: Human-readable message. Do not match on this string — match on code where present.
-          example: Invalid API key
-        code:
-          type: string
-          description: 'Stable machine-readable error code. Present on the newer error paths
-
-            (scheduling, platformSettings validation, idempotency); older errors
-
-            return `error` only. Always prefer this over the `error` text.
-
-            '
-          example: SCHEDULED_TIME_IN_PAST
-        field:
-          type: string
-          description: '`PLATFORM_SETTING_UNKNOWN` only. The exact dotted path of the rejected
-
-            key, relative to the `platformSettings` object (no `platformSettings.`
-
-            prefix).
-
-            '
-          example: youtube.thumbnail.typo
-        serverTime:
-          type: string
-          format: date-time
-          description: '`SCHEDULED_TIME_IN_PAST` only. Current server time (UTC) when the
-
-            request was rejected — compare against your clock to diagnose skew.
-
-            '
-          example: '2026-03-01T14:02:11.412Z'
   parameters:
     XPubloraClient:
       name: x-publora-client

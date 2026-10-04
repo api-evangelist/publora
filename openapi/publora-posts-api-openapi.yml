@@ -1137,6 +1137,66 @@ paths:
                 $ref: '#/components/schemas/Error'
 components:
   schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Human-readable message. Do not match on this string — match on code where present.
+          example: Invalid API key
+        code:
+          type: string
+          description: 'Stable machine-readable error code. Present on the newer error paths
+
+            (scheduling, platformSettings validation, idempotency); older errors
+
+            return `error` only. Always prefer this over the `error` text.
+
+            '
+          example: SCHEDULED_TIME_IN_PAST
+        field:
+          type: string
+          description: '`PLATFORM_SETTING_UNKNOWN` only. The exact dotted path of the rejected
+
+            key, relative to the `platformSettings` object (no `platformSettings.`
+
+            prefix).
+
+            '
+          example: youtube.thumbnail.typo
+        serverTime:
+          type: string
+          format: date-time
+          description: '`SCHEDULED_TIME_IN_PAST` only. Current server time (UTC) when the
+
+            request was rejected — compare against your clock to diagnose skew.
+
+            '
+          example: '2026-03-01T14:02:11.412Z'
+    YouTubePlaylistReference:
+      type:
+      - object
+      - 'null'
+      additionalProperties: false
+      default:
+        id: ''
+        platformId: ''
+      description: Reference to a YouTube playlist for platformSettings.youtube.playlist. Send empty strings for both fields to clear the playlist.
+      properties:
+        id:
+          type:
+          - string
+          - 'null'
+          default: ''
+          description: YouTube playlist id
+          example: PLxxxxxxxx
+        platformId:
+          type:
+          - string
+          - 'null'
+          default: ''
+          description: Compound YouTube platform id from platforms; must match the single selected YouTube channel
+          example: youtube-UCxxxxxxxx
     Warning:
       type: object
       description: 'A non-fatal notice about a request that still succeeded. The `warnings`
@@ -1195,60 +1255,6 @@ components:
           type: integer
           description: MEDIA_VALIDATION_PENDING only. How many validation probes ran before responding.
           example: 3
-    MediaUrlRateLimitError:
-      type: object
-      required:
-      - error
-      - code
-      - retryAfterSec
-      properties:
-        error:
-          type: string
-          example: Media URL ingestion rate limit reached (60 URLs/hour). Retry later or use the presigned get-upload-url flow.
-        code:
-          type: string
-          enum:
-          - MEDIA_URL_RATE_LIMITED
-        retryAfterSec:
-          type: integer
-          description: Seconds until this fixed-window limit may be retried
-          example: 60
-    Error:
-      type: object
-      properties:
-        error:
-          type: string
-          description: Human-readable message. Do not match on this string — match on code where present.
-          example: Invalid API key
-        code:
-          type: string
-          description: 'Stable machine-readable error code. Present on the newer error paths
-
-            (scheduling, platformSettings validation, idempotency); older errors
-
-            return `error` only. Always prefer this over the `error` text.
-
-            '
-          example: SCHEDULED_TIME_IN_PAST
-        field:
-          type: string
-          description: '`PLATFORM_SETTING_UNKNOWN` only. The exact dotted path of the rejected
-
-            key, relative to the `platformSettings` object (no `platformSettings.`
-
-            prefix).
-
-            '
-          example: youtube.thumbnail.typo
-        serverTime:
-          type: string
-          format: date-time
-          description: '`SCHEDULED_TIME_IN_PAST` only. Current server time (UTC) when the
-
-            request was rejected — compare against your clock to diagnose skew.
-
-            '
-          example: '2026-03-01T14:02:11.412Z'
     PlatformSettingsInput:
       type: object
       additionalProperties: false
@@ -1397,30 +1403,6 @@ components:
               - ''
               default: ''
               description: Repost visibility. CONNECTIONS is personal-profile-only; company-page reposts must use PUBLIC.
-    YouTubePlaylistReference:
-      type:
-      - object
-      - 'null'
-      additionalProperties: false
-      default:
-        id: ''
-        platformId: ''
-      description: Reference to a YouTube playlist for platformSettings.youtube.playlist. Send empty strings for both fields to clear the playlist.
-      properties:
-        id:
-          type:
-          - string
-          - 'null'
-          default: ''
-          description: YouTube playlist id
-          example: PLxxxxxxxx
-        platformId:
-          type:
-          - string
-          - 'null'
-          default: ''
-          description: Compound YouTube platform id from platforms; must match the single selected YouTube channel
-          example: youtube-UCxxxxxxxx
     Post:
       type: object
       properties:
@@ -1474,6 +1456,24 @@ components:
 
             '
           example: https://x.com/publora/status/1234567890123456789
+    MediaUrlRateLimitError:
+      type: object
+      required:
+      - error
+      - code
+      - retryAfterSec
+      properties:
+        error:
+          type: string
+          example: Media URL ingestion rate limit reached (60 URLs/hour). Retry later or use the presigned get-upload-url flow.
+        code:
+          type: string
+          enum:
+          - MEDIA_URL_RATE_LIMITED
+        retryAfterSec:
+          type: integer
+          description: Seconds until this fixed-window limit may be retried
+          example: 60
     YouTubeThumbnailReference:
       type:
       - object

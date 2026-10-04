@@ -299,25 +299,19 @@ paths:
                 error: Failed to fetch profile statistics
 components:
   schemas:
-    PlatformProfileMetrics:
-      type: object
-      description: Follower counters for one connected account.
-      properties:
-        followers:
-          type:
-          - integer
-          - 'null'
-          example: 1234
-        following:
-          type:
-          - integer
-          - 'null'
-          example: 321
-        posts:
-          type:
-          - integer
-          - 'null'
-          example: 987
+    PlatformAnalyticsIssue:
+      type: string
+      description: 'Why one connection could not be answered. Reported per connection rather
+
+        than failing the request.
+
+        '
+      enum:
+      - CONNECTION_NOT_FOUND
+      - AUTH_REVOKED
+      - FORBIDDEN
+      - RATE_LIMITED
+      - FETCH_FAILED
     Error:
       type: object
       properties:
@@ -409,19 +403,25 @@ components:
           - integer
           - 'null'
           description: Always null on both platforms
-    PlatformAnalyticsIssue:
-      type: string
-      description: 'Why one connection could not be answered. Reported per connection rather
-
-        than failing the request.
-
-        '
-      enum:
-      - CONNECTION_NOT_FOUND
-      - AUTH_REVOKED
-      - FORBIDDEN
-      - RATE_LIMITED
-      - FETCH_FAILED
+    PlatformProfileMetrics:
+      type: object
+      description: Follower counters for one connected account.
+      properties:
+        followers:
+          type:
+          - integer
+          - 'null'
+          example: 1234
+        following:
+          type:
+          - integer
+          - 'null'
+          example: 321
+        posts:
+          type:
+          - integer
+          - 'null'
+          example: 987
   parameters:
     XPubloraClient:
       name: x-publora-client
