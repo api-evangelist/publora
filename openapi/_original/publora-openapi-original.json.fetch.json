@@ -1,0 +1,12 @@
+{
+ "url": "https://docs.publora.com/openapi.json",
+ "requested_url": "https://docs.publora.com/openapi.json",
+ "status": 200,
+ "content_type": "application/json; charset=utf-8",
+ "bytes": 250492,
+ "sha256": "3ef378c49c6976a9b8f8a891c71ff575c4be0176714a8028f7532b19f4754b50",
+ "fetched_at": "2026-10-04",
+ "fetched_by": "APIEvangelist-Harvest/1.0 (+https://apievangelist.com)",
+ "match": "equivalent",
+ "note": "Re-fetched from the provider by verify-openapi-sources.py; the provider's current document describes the same operations (Jaccard 0.947), but the bytes differ, so the archive is an earlier or reformatted copy."
+}
