@@ -1,17 +1,19 @@
-generated: '2026-09-11'
+generated: '2026-09-23'
 method: generated
-source: openapi/publora-openapi-original.json
+source: openapi/publora-connections-api-openapi.yml, openapi/publora-linkedin-analytics-api-openapi.yml,
+  openapi/publora-logs-api-openapi.yml, openapi/publora-media-api-openapi.yml, openapi/publora-platform-analytics-api-openapi.yml,
+  openapi/publora-posts-api-openapi.yml, openapi/publora-webhooks-api-openapi.yml, openapi/publora-workspace-api-openapi.yml
 description: Recommended x-agentic-access execution contracts, classified heuristically from
   the OpenAPI. A governance starting point for exposing this API to AI agents — review and bind
   audience per deployment. See research/curity/agentic-governance/.
 summary:
   operations: 36
   by_action_class:
-    connected: 7
-    acting: 29
+    connected: 14
+    acting: 22
   by_consequence:
-    read: 7
-    write: 29
+    read: 14
+    write: 22
   human_in_the_loop_required: 0
 operations:
 - path: /platform-connections
@@ -24,19 +26,9 @@ operations:
     token:
       max-ttl: 3600
     audit: none
-- path: /platform-limits
-  method: get
-  operationId: getPlatformLimits
-  x-agentic-access:
-    action-class: connected
-    consequence: read
-    subject: optional
-    token:
-      max-ttl: 3600
-    audit: none
-- path: /create-post
+- path: /test-connection/{platformId}
   method: post
-  operationId: createPost
+  operationId: testConnection
   x-agentic-access:
     action-class: acting
     consequence: write
@@ -50,9 +42,9 @@ operations:
       - abnormal
       - high-value
     audit: required
-- path: /get-post/{postGroupId}
-  method: get
-  operationId: getPost
+- path: /linkedin-post-statistics
+  method: post
+  operationId: getLinkedInPostStatistics
   x-agentic-access:
     action-class: connected
     consequence: read
@@ -60,9 +52,39 @@ operations:
     token:
       max-ttl: 3600
     audit: none
-- path: /update-post/{postGroupId}
-  method: put
-  operationId: updatePost
+- path: /linkedin-account-statistics
+  method: post
+  operationId: getLinkedInAccountStatistics
+  x-agentic-access:
+    action-class: connected
+    consequence: read
+    subject: optional
+    token:
+      max-ttl: 3600
+    audit: none
+- path: /linkedin-profile-summary
+  method: post
+  operationId: getLinkedInProfileSummary
+  x-agentic-access:
+    action-class: connected
+    consequence: read
+    subject: optional
+    token:
+      max-ttl: 3600
+    audit: none
+- path: /linkedin-followers
+  method: post
+  operationId: getLinkedInFollowers
+  x-agentic-access:
+    action-class: connected
+    consequence: read
+    subject: optional
+    token:
+      max-ttl: 3600
+    audit: none
+- path: /linkedin-reactions
+  method: post
+  operationId: addLinkedInReaction
   x-agentic-access:
     action-class: acting
     consequence: write
@@ -76,9 +98,9 @@ operations:
       - abnormal
       - high-value
     audit: required
-- path: /delete-post/{postGroupId}
+- path: /linkedin-reactions
   method: delete
-  operationId: deletePost
+  operationId: removeLinkedInReaction
   x-agentic-access:
     action-class: acting
     consequence: write
@@ -92,6 +114,64 @@ operations:
       - abnormal
       - high-value
     audit: required
+- path: /linkedin-reshare
+  method: post
+  operationId: createLinkedInReshare
+  x-agentic-access:
+    action-class: acting
+    consequence: write
+    subject: required
+    audience: null
+    token:
+      max-ttl: 900
+    escalation:
+      human-in-the-loop: conditional
+      triggers:
+      - abnormal
+      - high-value
+    audit: required
+- path: /linkedin-comments
+  method: post
+  operationId: createLinkedInComment
+  x-agentic-access:
+    action-class: acting
+    consequence: write
+    subject: required
+    audience: null
+    token:
+      max-ttl: 900
+    escalation:
+      human-in-the-loop: conditional
+      triggers:
+      - abnormal
+      - high-value
+    audit: required
+- path: /linkedin-comments
+  method: delete
+  operationId: deleteLinkedInComment
+  x-agentic-access:
+    action-class: acting
+    consequence: write
+    subject: required
+    audience: null
+    token:
+      max-ttl: 900
+    escalation:
+      human-in-the-loop: conditional
+      triggers:
+      - abnormal
+      - high-value
+    audit: required
+- path: /post-logs/{postGroupId}
+  method: get
+  operationId: getPostLogs
+  x-agentic-access:
+    action-class: connected
+    consequence: read
+    subject: optional
+    token:
+      max-ttl: 3600
+    audit: none
 - path: /media/{mediaId}
   method: delete
   operationId: deleteMedia
@@ -176,37 +256,35 @@ operations:
   method: post
   operationId: getPlatformPostStatistics
   x-agentic-access:
-    action-class: acting
-    consequence: write
-    subject: required
-    audience: null
+    action-class: connected
+    consequence: read
+    subject: optional
     token:
-      max-ttl: 900
-    escalation:
-      human-in-the-loop: conditional
-      triggers:
-      - abnormal
-      - high-value
-    audit: required
+      max-ttl: 3600
+    audit: none
 - path: /profile-statistics
   method: post
   operationId: getPlatformProfileStatistics
   x-agentic-access:
-    action-class: acting
-    consequence: write
-    subject: required
-    audience: null
+    action-class: connected
+    consequence: read
+    subject: optional
     token:
-      max-ttl: 900
-    escalation:
-      human-in-the-loop: conditional
-      triggers:
-      - abnormal
-      - high-value
-    audit: required
-- path: /linkedin-post-statistics
+      max-ttl: 3600
+    audit: none
+- path: /platform-limits
+  method: get
+  operationId: getPlatformLimits
+  x-agentic-access:
+    action-class: connected
+    consequence: read
+    subject: optional
+    token:
+      max-ttl: 3600
+    audit: none
+- path: /create-post
   method: post
-  operationId: getLinkedInPostStatistics
+  operationId: createPost
   x-agentic-access:
     action-class: acting
     consequence: write
@@ -220,9 +298,19 @@ operations:
       - abnormal
       - high-value
     audit: required
-- path: /linkedin-account-statistics
-  method: post
-  operationId: getLinkedInAccountStatistics
+- path: /get-post/{postGroupId}
+  method: get
+  operationId: getPost
+  x-agentic-access:
+    action-class: connected
+    consequence: read
+    subject: optional
+    token:
+      max-ttl: 3600
+    audit: none
+- path: /update-post/{postGroupId}
+  method: put
+  operationId: updatePost
   x-agentic-access:
     action-class: acting
     consequence: write
@@ -236,73 +324,9 @@ operations:
       - abnormal
       - high-value
     audit: required
-- path: /linkedin-profile-summary
-  method: post
-  operationId: getLinkedInProfileSummary
-  x-agentic-access:
-    action-class: acting
-    consequence: write
-    subject: required
-    audience: null
-    token:
-      max-ttl: 900
-    escalation:
-      human-in-the-loop: conditional
-      triggers:
-      - abnormal
-      - high-value
-    audit: required
-- path: /linkedin-followers
-  method: post
-  operationId: getLinkedInFollowers
-  x-agentic-access:
-    action-class: acting
-    consequence: write
-    subject: required
-    audience: null
-    token:
-      max-ttl: 900
-    escalation:
-      human-in-the-loop: conditional
-      triggers:
-      - abnormal
-      - high-value
-    audit: required
-- path: /linkedin-reactions
-  method: post
-  operationId: addLinkedInReaction
-  x-agentic-access:
-    action-class: acting
-    consequence: write
-    subject: required
-    audience: null
-    token:
-      max-ttl: 900
-    escalation:
-      human-in-the-loop: conditional
-      triggers:
-      - abnormal
-      - high-value
-    audit: required
-- path: /linkedin-reactions
+- path: /delete-post/{postGroupId}
   method: delete
-  operationId: removeLinkedInReaction
-  x-agentic-access:
-    action-class: acting
-    consequence: write
-    subject: required
-    audience: null
-    token:
-      max-ttl: 900
-    escalation:
-      human-in-the-loop: conditional
-      triggers:
-      - abnormal
-      - high-value
-    audit: required
-- path: /linkedin-reshare
-  method: post
-  operationId: createLinkedInReshare
+  operationId: deletePost
   x-agentic-access:
     action-class: acting
     consequence: write
@@ -319,32 +343,6 @@ operations:
 - path: /list-posts
   method: get
   operationId: listPosts
-  x-agentic-access:
-    action-class: connected
-    consequence: read
-    subject: optional
-    token:
-      max-ttl: 3600
-    audit: none
-- path: /test-connection/{platformId}
-  method: post
-  operationId: testConnection
-  x-agentic-access:
-    action-class: acting
-    consequence: write
-    subject: required
-    audience: null
-    token:
-      max-ttl: 900
-    escalation:
-      human-in-the-loop: conditional
-      triggers:
-      - abnormal
-      - high-value
-    audit: required
-- path: /post-logs/{postGroupId}
-  method: get
-  operationId: getPostLogs
   x-agentic-access:
     action-class: connected
     consequence: read
@@ -413,38 +411,6 @@ operations:
 - path: /webhooks/{id}/regenerate-secret
   method: post
   operationId: regenerateWebhookSecret
-  x-agentic-access:
-    action-class: acting
-    consequence: write
-    subject: required
-    audience: null
-    token:
-      max-ttl: 900
-    escalation:
-      human-in-the-loop: conditional
-      triggers:
-      - abnormal
-      - high-value
-    audit: required
-- path: /linkedin-comments
-  method: post
-  operationId: createLinkedInComment
-  x-agentic-access:
-    action-class: acting
-    consequence: write
-    subject: required
-    audience: null
-    token:
-      max-ttl: 900
-    escalation:
-      human-in-the-loop: conditional
-      triggers:
-      - abnormal
-      - high-value
-    audit: required
-- path: /linkedin-comments
-  method: delete
-  operationId: deleteLinkedInComment
   x-agentic-access:
     action-class: acting
     consequence: write
@@ -536,15 +502,9 @@ operations:
   method: post
   operationId: getConnectionUrl
   x-agentic-access:
-    action-class: acting
-    consequence: write
-    subject: required
-    audience: null
+    action-class: connected
+    consequence: read
+    subject: optional
     token:
-      max-ttl: 900
-    escalation:
-      human-in-the-loop: conditional
-      triggers:
-      - abnormal
-      - high-value
-    audit: required
+      max-ttl: 3600
+    audit: none

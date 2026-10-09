@@ -53,3 +53,29 @@ legacy_plans:
     - {name: "Premium Monthly (legacy)", price: 9.99, posts_per_month: 500, scheduled_posts: 500}
     - {name: "Premium Yearly (legacy)", price: 5.99, posts_per_month: 500, scheduled_posts: 500}
 free_trial: 14-day free trial, no credit card required (Starter is free forever)
+x-canonical:
+  generated: '2026-10-08'
+  vocabulary: all/0-working/economics/plans-canonical.yml
+  models:
+  - free
+  - negotiated
+  units: []
+  plans:
+  - name: Starter
+    access: other
+    model: free
+    model_how: derived
+    units: []
+    periods: []
+  - name: Pro
+    access: other
+    model: unstated
+    model_how: derived
+    units: []
+    periods: []
+  - name: Agency
+    access: other
+    model: negotiated
+    model_how: derived
+    units: []
+    periods: []
