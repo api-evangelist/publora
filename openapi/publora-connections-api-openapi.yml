@@ -196,17 +196,6 @@ components:
 
             '
           example: '2026-03-01T14:02:11.412Z'
-    ConnectionLastError:
-      type:
-      - object
-      - 'null'
-      description: Last connection error, or null
-      properties:
-        message:
-          type: string
-        occurredAt:
-          type: string
-          format: date-time
     PlatformConnection:
       type: object
       properties:
@@ -261,6 +250,17 @@ components:
           description: Timestamp of last successful post
         lastError:
           $ref: '#/components/schemas/ConnectionLastError'
+    ConnectionLastError:
+      type:
+      - object
+      - 'null'
+      description: Last connection error, or null
+      properties:
+        message:
+          type: string
+        occurredAt:
+          type: string
+          format: date-time
   parameters:
     XPubloraClient:
       name: x-publora-client

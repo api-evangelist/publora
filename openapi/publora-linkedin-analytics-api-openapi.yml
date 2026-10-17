@@ -1052,17 +1052,6 @@ paths:
                 $ref: '#/components/schemas/Error'
 components:
   schemas:
-    LinkedInUrnTranslation:
-      type: object
-      description: Present only when LinkedIn translated an activity URN before processing the reaction
-      required:
-      - from
-      - to
-      properties:
-        from:
-          type: string
-        to:
-          type: string
     Error:
       type: object
       properties:
@@ -1099,6 +1088,17 @@ components:
 
             '
           example: '2026-03-01T14:02:11.412Z'
+    LinkedInUrnTranslation:
+      type: object
+      description: Present only when LinkedIn translated an activity URN before processing the reaction
+      required:
+      - from
+      - to
+      properties:
+        from:
+          type: string
+        to:
+          type: string
   parameters:
     XPubloraClient:
       name: x-publora-client

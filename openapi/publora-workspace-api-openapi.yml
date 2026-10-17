@@ -458,39 +458,6 @@ paths:
                 $ref: '#/components/schemas/Error'
 components:
   schemas:
-    ManagedUser:
-      type: object
-      properties:
-        _id:
-          type: string
-          description: User ID
-          example: 507f1f77bcf86cd799439011
-        username:
-          type: string
-          description: User email
-          example: user@example.com
-        displayName:
-          type: string
-          example: John Doe
-        role:
-          type: string
-          enum:
-          - managed
-          example: managed
-        dailyPostsLeft:
-          type: integer
-          example: 100
-        connectionsPageUrl:
-          type:
-          - string
-          - 'null'
-          format: uri
-          description: URL for user to connect their social accounts
-        connectionsPageTokenExpiresAt:
-          type:
-          - string
-          - 'null'
-          format: date-time
     Error:
       type: object
       properties:
@@ -527,6 +494,39 @@ components:
 
             '
           example: '2026-03-01T14:02:11.412Z'
+    ManagedUser:
+      type: object
+      properties:
+        _id:
+          type: string
+          description: User ID
+          example: 507f1f77bcf86cd799439011
+        username:
+          type: string
+          description: User email
+          example: user@example.com
+        displayName:
+          type: string
+          example: John Doe
+        role:
+          type: string
+          enum:
+          - managed
+          example: managed
+        dailyPostsLeft:
+          type: integer
+          example: 100
+        connectionsPageUrl:
+          type:
+          - string
+          - 'null'
+          format: uri
+          description: URL for user to connect their social accounts
+        connectionsPageTokenExpiresAt:
+          type:
+          - string
+          - 'null'
+          format: date-time
   parameters:
     XPubloraClient:
       name: x-publora-client
