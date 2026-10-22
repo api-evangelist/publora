@@ -106,3 +106,46 @@
     detected: '2026-10-21'
   status: not-a-workflow
   arazzo: null
+- slug: publora-raycast
+  label: Raycast
+  partner: raycast
+  partner_name: Raycast
+  category: Raycast Store extension (community wrapper)
+  type: marketplace
+  marketplace: raycast-store
+  channel: connector-listing
+  evidence: https://www.raycast.com/anton_shvein/publora
+  source: edge
+  relationship: connector-coverage
+  contract_reference:
+    register: Raycast Store (raycast/extensions monorepo + store_listings JSON)
+    spec_file: null
+    role: raycast-community-wrapper
+    builder: community
+    authors:
+    - anton_shvein
+    matched_domain: publora.com
+    matched_by: domain
+    monorepo_commit: 84f9ac51336a8c69f70974a75bc067c0feae3658
+    listings:
+    - title: Publora
+      store_url: https://www.raycast.com/anton_shvein/publora
+      installs: 19
+      categories:
+      - Communication
+      - Web
+      - Fun
+      source: https://github.com/raycast/extensions/tree/84f9ac51336a8c69f70974a75bc067c0feae3658/extensions/publora/
+      author: anton_shvein
+    categories:
+    - Communication
+    - Fun
+    - Web
+    identity_note: the extension's own source calls a host on the product's domain AND its title / package name
+      passes partner_link's name check; built by Raycast community developers, not the vendor
+    signal_note: 'coverage: Raycast''s store reaches the product through community-built extensions; one edge per
+      (product, store); install / listing counts are context, never counted'
+    detected_by: sweep-raycast-store-extensions.py
+    detected: '2026-10-22'
+  status: not-a-workflow
+  arazzo: null
