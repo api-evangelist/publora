@@ -149,3 +149,16 @@
     detected: '2026-10-22'
   status: not-a-workflow
   arazzo: null
+- slug: publora-obsidian-obsidian-community-plugins
+  label: Obsidian (obsidian-community-plugins)
+  partner: obsidian
+  partner_name: Obsidian (obsidian-community-plugins)
+  category: Obsidian community plugin
+  type: marketplace
+  marketplace: obsidian-community-plugins
+  channel: partner-built
+  evidence: https://github.com/publora/obsidian-publora
+  source: edge
+  relationship: platform-app
+  status: not-a-workflow
+  arazzo: null
