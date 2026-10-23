@@ -179,6 +179,31 @@ edges:
   detected: '2026-10-22'
   detected_by: mirror-platform-listings.py
   category: Obsidian community plugin
+- partner_name: IFTTT
+  partner: ifttt
+  partner_match: aggregator
+  type: marketplace
+  marketplace: ifttt-services
+  channel: ipaas-listing
+  relationship: ipaas-bridge
+  direction: third-party
+  evidence: https://ifttt.com/publora
+  category: null
+  contract_reference:
+    register: IFTTT service directory (ifttt.com/explore/services; ifttt.com/<service>)
+    spec_file: null
+    role: ipaas-connector:ifttt
+    registered_name: Publora
+    matched_domain: publora.com
+    matched_by: domain
+    app_slug: publora
+    ifttt_category: Social media
+    builder: unknown (the service page does not say who built it)
+    detected_by: sweep-ifttt-services.py
+    detected: '2026-10-23'
+    signal_note: one edge per (provider, platform); triggers, actions and applet counts are context, never read
+  detected_by: sweep-ifttt-services.py
+  first_seen: '2026-10-23'
 generated: '2026-10-14'
 method: searched
 checked:
@@ -197,5 +222,8 @@ checked:
 - https://github.com/raycast/extensions/tree/84f9ac51336a8c69f70974a75bc067c0feae3658/extensions
 - https://www.raycast.com/api/v1/store_listings
 - obsidian/integrations/obsidian-integration-edges.yml
+- https://ifttt.com/explore/services
+- https://ifttt.com/publora
+- https://ifttt.com/sitemap_services.xml
 source:
 - https://zapier.com/api/v4/apps/
